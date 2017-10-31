@@ -4,5 +4,5 @@
 *.log
 *.out
 *.toc
-*.syntex.gz
+*.synctex.gz
 *.pdf
