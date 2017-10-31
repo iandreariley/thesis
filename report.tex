@@ -1,6 +1,8 @@
 \documentclass[12pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{geometry}
@@ -274,22 +276,35 @@ that they cover (union). That is, for a predicted bounding box with area $A_p$ a
 \frac{A_p \cap A_t}{A_p \cup A_t}
 \end{gather*}
 
-A tracker is successful on a given frame if the IoU $\geq \theta_s$ where $\theta_s$ is an arbitrary threshold in the range $[0,1]$.
+A tracker is successful on a given frame if the IoU $\geq \theta_s$ where $\theta_s$ is an arbitrary threshold in the range $[0,1]$. For the purposes of this project I report only the IoU, and not the precision.
 
-In both the case of precision and success, a tracker's score for a given threshold is the mean over all sequences of the correct prediction rate for all frames in the sequence with respect to the threshold. For both metrics, scores are plotted against a continuous range of threshold values; $[0,50]$ for precision, and $[0,1]$ for success. In the case of the success plot, a final score for the tracker is determined by the
-area under the curve (AUC).
+Each tracker receives a single IoU score for each test in the tracking benchmark (there are three, as explained later). In the simplest case, this is calculated by computing the IoU for each frame in the 100 sequences in the OTB-100 dataset, and then calculating the frequency of success at 50 evenly spaced thresholds in the range $[0,1]$. This generates a plot of success rate as a function of threshold value. The final IoU score is the area under the curve (AUC) of the IoU success rate plot.
 
 OTB uses three separate tests, each of which generates one precision plot and one success plot. One-Pass Evaluation (OPE), Spatial Perturbation Evaluation (SPE), and Temporal Perturbation Evaluation (TPE) to evaluate the performance of online trackers.
 
-The OPE test simply runs the tracker, passing it the ground truth bounding-box for the first frame, and evaluating its performance on the frames thereafter. The SPE and TPE tests attempt to quantify the trackers robustness to spatial and temporal shifts in the initial bounding box. The SPE test runs the tracker on each sequence 12 different times on shifted and scaled versions of the initial bounding box. The TPE test runs
-the tracker over segements of each video, restarting the tracker with the initial frame of each segment.
+The OPE test runs the tracker over each sequence exactly once. The tracker is given the ground-truth bounding box for the target in the first frame, and generates predicted bounding boxes for each frame thereafter. As the authors of OTB note in \cite{wu2013online}, one-pass evaluation may under- or overestimate the performance of a tracker if the initial frames and positions of the targets are, on average, particularly favorable or unfavorable for the tracker being evaluated. In order to evaluate a tracker's robustness to changes in start frame and target selection, the OTB benchmark implements the TPE and SPE tests respectively. The SPE test runs the tracker on each sequence 12 times; for each run, the initial bounding box is slightly scaled or shifted to mimic variance in user-defined bounding boxes. Similarly, the TPE test breaks each sequence into twelve sub-sequences, and runs the tracker over each subsequence, re-initializing the tracker with the first frame and ground-truth bounding box of each. As with OPE, the frame-wise metrics are computed at different thresholds, and the AUC computed.
 
-Speed will simply be reported in frames-per-second, as observed while running the software live, since this is the metric of interest (OTB datasets are presented as image files, each of which must be opened and loaded into the program, whereas the intention behind this software is to have it run on a live video feed). I will present results in a table against the speeds of the same trackers in the accuracy metric.
+Speed is reported in frames per second (fps).
 
-\subsection{Evaluation of Object Recognition Component}
+\subsection{Results}
 
-For object recognition (which I'll define here as the task of determining whether two images are of the same object, as opposed to object \emph{classification}, which is the task of determining whether an image contains a known type of object), I propose to evaluate performance by creating pairs of images that either do or do not contain the same object. I intend to extract image patches from frames of the video sequences in the
-OTB dataset, and pair them with each other, to build a dataset of image pairs that either contain the same object, or do not. I will then evaluate the ability of the object recognition component by measuring its accuracy in predicting whether a pair of images contain the same object. I will also report its AUC, as well as a plot of the ROC curve.
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/cmt_siamfc_AUC.png}
+  \caption{A subfigure}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/all_trackers_AUC.png}
+  \caption{A subfigure}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{A figure with two subfigures}
+\label{fig:test}
+\end{figure}
 
 \section{Tentative Timetable for Completion of Thesis}
 
