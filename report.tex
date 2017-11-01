@@ -260,10 +260,15 @@ currently in view, the algorithm switches to a detection mode wherein it searche
 
 \section{Results}
 
-\subsection{Evaluation of Target trackers}
+\subsection{Deliverables}
 
-All trackers are evaluated against the Online Tracking Benchmark (OTB) developed by Yi Wu, Jongwoo Lim and Ming-Hsuan Yang in \cite{wu2013online}, and compared against each other. To the best of my knowledge, OTB is the most thorough, complete, and widely used benchmark for online tracking. Further, the authors of the SiamFC and CMT algorithms (\cite{bertinetto2016fully} and \cite{Nebehay2015CVPR}, respectively) both
-use OTB to evaluate their results, and using it again here provides a measure of continuity with their research.
+\textbf{Tracking Module:} A target tracking module comprised of a Jetson TX1 embedded device with runnable target-tracking software installed. Currently, the tracking program is written to follow a target at constant speed until it is no longer in frame, however this behavior could be modified. Due to flight equipment being unavailable, the software has not yet been tested end-to-end. However the two primary modules of the software (visual target-tracker and flight controller) have individually passed functionality tests. The flight controller has shown, in simulation, that it will correctly follow a target within its view, and, as evidenced by the tracking results in \ref{trackereval} Remote connection to the TX1 is handled over wifi, which can be used to launch the tracking script and set the target.
+
+\textbf{Application}: The tracking application, consisting of a library of visual target-trackers and a flight controller for following a target, has been made freely available via github. Documentation has been provided to assist in using the tracking module, and it is my sincere hope that someone will actually try to use it.
+
+\subsection{Evaluation of Target trackers}\label{trackereval}
+
+All trackers are evaluated against the Online Tracking Benchmark (OTB) developed by Yi Wu, Jongwoo Lim and Ming-Hsuan Yang in \cite{wu2013online}, and compared against each other. To the best of my knowledge, OTB is the most thorough, complete, and widely used benchmark for online tracking. Further, the authors of the SiamFC and CMT algorithms (\cite{bertinetto2016fully} and \cite{Nebehay2015CVPR}, respectively) both use OTB to evaluate their results, and using it again here provides a measure of continuity with their research.
 
 OTB uses two metrics of prediction at each frame in a sequence, precision and intersection-over-union (IoU). In both cases, the metrics are compared against an arbitrary threshold and are considered to pass if they meet or exceed the expectations defined by the threshold, and fail otherwise.
 
@@ -286,7 +291,13 @@ The OPE test runs the tracker over each sequence exactly once. The tracker is gi
 
 Speed is reported in frames per second (fps).
 
+\subsection{Environment}
+
+All tracking algorithms were run on a Jetson TX1 running L4T Ubuntu 14.04 (Trusty Taur). All algorithms were implemented in python, and were modified minimally from the original code. Although the TX1 has 3.9 GiB of memory, only around 2.43 GiB memory is available in user space \textbf{[Why?]}. L4T Ubuntu is a multi-tasking OS, and is not the most efficient environment in which a tracker can run. However, it mimics the real environment in which a tracker would have to run on small drone, since the onboard computer would have to handle several tasks (e.g. communicating with ground control).
+
 \subsection{Results}
+
+Figure \ref{fig:ope} shows the results of the OPE test. As is evident from plot \ref{fig:ope_vs}, the SiamFC algorithm far outperforms the CMT algorithm; and plot \ref{fig:ope_all} shows that SiamFC outperforms several other well-known feature-based tracking algorithms. However, the SiamFC algorithm ran at an average of 2.21 fps over the OPE test, while the CMT algorithm ran at an average of 10.70 fps [\textbf{verify this number}]. Notably, the SiamFC tracker did not have enough memory to store the entire computational graph in memory, which likely adversely affected its speed. 
 
 \begin{figure}
 \centering
@@ -300,7 +311,7 @@ Speed is reported in frames per second (fps).
   \centering\captionsetup{width=.85\linewidth}
   \includegraphics[width=\linewidth]{img/all_trackers_AUC.png}
   \caption{OPE plot for several trackers, SiamFC is the best performing.}
-  \label{fig:ope_all_trackers}
+  \label{fig:ope_all}
 \end{subfigure}
 \caption{One-Pass Evaluation (OPE) results for the CMT and SiamFC trackers}
 \label{fig:ope}
