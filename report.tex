@@ -293,11 +293,29 @@ Speed is reported in frames per second (fps).
 
 \subsection{Environment}
 
-All tracking algorithms were run on a Jetson TX1 running L4T Ubuntu 14.04 (Trusty Taur). All algorithms were implemented in python, and were modified minimally from the original code. Although the TX1 has 3.9 GiB of memory, only around 2.43 GiB memory is available in user space \textbf{[Why?]}. L4T Ubuntu is a multi-tasking OS, and is not the most efficient environment in which a tracker can run. However, it mimics the real environment in which a tracker would have to run on small drone, since the onboard computer would have to handle several tasks (e.g. communicating with ground control).
+All tracking algorithms were run on a Jetson TX1 running Linux for Tegra (L4T) Ubuntu 14.04 (Trusty Taur). All algorithms were implemented in python, and were modified minimally from the original code. Although the TX1 has 3.9 GiB of memory, only around 2.43 GiB memory is available in user space \textbf{[Why?]}. L4T Ubuntu is a multi-tasking OS, and is not the most efficient environment in which a tracker can run. However, it mimics the real environment in which a tracker would have to run on small drone, since the onboard computer would have to handle several tasks (e.g. communicating with ground control).
 
-\subsection{Results}
+\subsection{Tracking Results}\label{tracking_results}
 
-Figure \ref{fig:ope} shows the results of the OPE test. As is evident from plot \ref{fig:ope_vs}, the SiamFC algorithm far outperforms the CMT algorithm; and plot \ref{fig:ope_all} shows that SiamFC outperforms several other well-known feature-based tracking algorithms. However, the SiamFC algorithm ran at an average of 2.21 fps over the OPE test, while the CMT algorithm ran at an average of 10.70 fps [\textbf{verify this number}]. Notably, the SiamFC tracker did not have enough memory to store the entire computational graph in memory, which likely adversely affected its speed. 
+Figure \ref{fig:ope} shows the results of the OPE test. As is evident from plot \ref{fig:ope_vs}, the SiamFC algorithm far outperforms the CMT algorithm; and plot \ref{fig:ope_all} shows that SiamFC outperforms several other well-known feature-based tracking algorithms. However, the SiamFC algorithm ran at an average of 2.21 fps over the OPE test, while the CMT algorithm ran at an average of 10.70 fps [\textbf{verify this number}]. Notably, the SiamFC tracker did not have enough memory to store the entire computational graph in memory, which likely adversely affected its speed.
+
+\section{Conclusion and Future Work}
+
+\subsection{Conclusion}
+In this thesis I have implemented and demonstrated the feasibility of a tracking module for small, low-power devices. The CMT tracker coupled with sound control logic, could conceivably be used to autonomously track an object. I have also shown that a learning-based algorithm, such as the SiamFC algorithm, can be run on a low-power computer such as the Nvidia Jetson TX1. Although its performance was too slow to currently be considered for online tracking, it is not inconceivable that, with some optimization, it could reach real-time speed. This would allow small autonomous devices to take advantage of the powerful computer vision applications of neural networks.
+
+\subsection{Future Work}
+Several questions are left unanswered by this research. Foremost is the question of whether a neural network large enough to perform at or near state-of the art tracking performance (i.e. on the OTB benchmark) can be run in real time on a device as small as the Jetson TX1. Given that lack of sufficient memory for the network is the most likely culprit for the slow speed of the SiamFC algorithm on the TX1, reducing the memory load of the algorithm is an obvious first step.
+
+A couple of options exist for reducing memory load. The first is to change the network architecture. The authors of the SiamFC algorithm used convolutional layers inspired by Alexnet in \cite{krizhevsky2012imagenet}. However, as shown in \cite{simonyan2014very}, a deeper network architecture with smaller convolutional kernels can simultaneously decrease the number of parameters in the network, and increase performance.
+
+The second approach would be to keep the same basic architecture (i.e. kernel size and depth) while reducing the number of total parameters by reducing the number of kernels in each layer.
+
+Because these changes occur along different axes (kernel-size and depth, and kernel count), they can be combined. For example, we may use the first 10 convolutional layers of VGGNet while reducing the number of kernels in each layer by half.
+
+Another obvious approach would be to simply increase the available memory on the device. As a research goal this is not of much interest, but it would serve to validate whether having the whole network in memory significantly increases performance and, if so, by how much.
+
+There is also ample room for further research in the domain of control logic. The resulting module of this research uses a fixed camera that is mounted on the logical "front" of the copter drone, which limits its utility. Ideally, the module would use a camera mounted on a gimbal and implement two control logics: one for the camera, and one for the drone itself. An ideal control situation would be one that keeps the camera tracking the object of interest, while drone itself is free to navigate an unrelated pattern (e.g. circling the target, or executing maneuvers for collision avoidance).
 
 \begin{figure}
 \centering
