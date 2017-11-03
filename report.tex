@@ -105,68 +105,21 @@ In this thesis, I present two implementations of an onboard target-tracking modu
 %A further complication is that small drones operate on very small power supplies. The fastest GPGPUs, which are often the test hardware for the previously mentioned target-tracking architectures, have TDPs of around 250 watts - far too much power for a quad-copter to deliver on its limited power supply. Recent GPGPU designs geared specifically for low-power applications have made it possible to run complex parallel applications like CNNs in low-power environments, like a small battery-powered drone. Although they do not provide as much computational power as their larger, more power-hungry counterparts, it is our hope that I may successfully run neural-network-based target tracking software on these modules, in flight. 
 
 \section{Literature Review}
-\subsection{Convolutional Neural Networks and Computer Vision}
-As noted above, CNNs have, in recent years, proved staggeringly adept at image classification. The CNN architecture is a special case of the more general "feed-forward" architecture.
-\subsubsection{Feed-Forward Neural Networks}
-Feed-forward neural networks can be represented as an acyclic computational graph composed of "layers" of vertices, where each vertex is connected to any number of vertices in the layers adjacent to it, but not connected to any of the vertices in its own layer. Each edge in the graph has an associated weight, and the output of each vertex is the sum of the weighted outputs of the previous layer's vertices passed through some nonlinear function.
 
-Perhaps the simplest of these architectures is a fully-connected neural network, in which each neuron (vertex) is connected to all neurons in the prior and subsequent layers. A small instance is shown in figure  \ref{fig:fcnn}. Indeed, fully-connected neural networks have a wonderfully simple architecture when compared with CNNs and, for a similar number of parameters (edges), compute a forward pass significantly faster. However, the number of parameters in a
-fully-connected neural networks grows very quickly with the size of the input ($O(n)^2$). For large and deep networks, the number of parameters becomes too large to keep in memory, and computation slows drastically. The CNN architecture reduces the total number of parameters by "sharing" them across neurons in a given layer. It turns out this method also preserves the spatial locality of image features, which is of obvious value in object localization and
-classification.
+\subsection{UAV target tracking}
 
-\begin{figure}[h]
-\includegraphics[width=\linewidth]{img/FCNN.png}
-\caption{A fully-connected neural network}
-\label{fig:fcnn}
-\end{figure}
+Research on monocular, vision-based target tracking for UAVs appears sparse, despite continuing interest and advances in vision-based target tracking. For small, rotary wing drones I know of only a few previous attempts to automate target tracking \cite{basit2015joint,lin2012robust,boudjit2015detection}. In all of these works, the tracking and control logic is handled remotely and communicated to the drone via wifi. I wish, instead, to perform
+target-tracking and control logic onboard the UAV, mainly to eliminate the dependency on communication with a remote entity, but also to reduce latency in video processing and control decisions. Recent advances in computer hardware, notably the availability of low-power GPGPUs, allow for a computer to be carried on-board a small drone. Further, these small, highly parallel modules do not draw much power, so they do not require drones to carry
+larger batteries, and can compute large amounts of data in parallel, which means that neural networks can run quickly on them.
 
-\subsubsection{Training}
-Training of all neural network architectures discussed herein is done through means of backpropagation. Backpropagation is decidedly the most popular means of training neural networks. While it was toyed with in the late 60s and 70s, it wasn't until the mid 80s that backpropagation was fully appreciated by the broader machine learning community \cite{hecht1989theory}. At it's core, backpropagation is the key to stochastic gradient descent, a method of searching
-the parameter space for a set of parameters that minimizes a provided \emph{loss function}. The duty of the loss function is to provide a real number that measures how the network performed on a given test set (lower is better).
+It is also worth noting that all of the above papers use hand-crafted features for target tracking rather than learning methods, which I propose to use in this paper.
 
-Backpropagation, then, is simply computing the derivative of the loss with respect to every parameter in the network, using chain rule to "propagate" local gradients backward through the graph. In short, it simply computes the gradient of the loss. Stochastic gradient descent is the process of computing the gradient of the loss (via backpropagation), and taking a small "step" in the opposite direction (the direction of maximum decrease of the loss). It is
-worth noting that backpropagation requires that the whole network be differentiable. However, linear combinations are always differentiable, so the making the graph differentiable boils down to making the activation function of the neurons differentiable.
-
-\subsubsection{Convolutional Neural Network Architecture}
-The architecture of fully-connected networks makes the naive assumption that any number of inputs may have a relationship with each other; that is, that, combined, they define a feature. In the image domain, where each element of the input vector is a pixel, I know that this is almost never the case. It is far more likely that two adjacent pixels are related to each other (for example, are part of the same object) than it is that pixels on opposite edges of
-the image are. CNNs make use of this spatial relationship by grouping weights together into small, square \emph{filters} that are passed over the image in discrete steps. Each step represents a neuron in the next layer. So the weights in each filter are shared across neurons. This drastically reduces the number of parameters necessary for a network with large input, and uses the parameters more efficiently. This is especially true because the early layers of a
-deep neural network end up tasked with extracting low-level features - like straight lines and areas of intense color. These features are common throughout images, so it makes sense to use a single set of weights to look for them rather than an individual set for each area in the image.
-
-More formally, let $F$ and $I$ be two two-dimensional tensors of dimensions $n\times n$ and $m\times m$ respectively such that $m \ge n$ and $n = p * 2 + 1 : p \in \mathbb{N}$; that is, $p$ is odd. Now let $s$ be a positive integer such that $m$ is divisible by $s + 1$. Then the convolution of $F$ over $I$ is the two-dimensional tensor created by taking the dot product of $F$ with each sub-matrix of $I$ starting at the top-left most viable position for F
-(where the boundary of $F$ is flush with $I$) and taking strides of size $s$ row-wise and then column-wise and taking the dot product at each location. An example is shown in figure \ref{fig:CNN}.
-
-\begin{figure}[h]
-\includegraphics[width=\linewidth]{img/CNN.jpeg}
-\caption{A layer of convolutional filters and the resulting convolution volume with an input image}
-\label{fig:CNN}
-\end{figure}
-
-Fukushima proposed a convolutional architecture in \cite{fukushima1980neocognitron}, although the model did not use backpropagation (which was still not fully understood). The CNN architecture was first described in its present form by Yan LeCun in \cite{lecun1998gradient}, which used two convolutional layers followed by a deep, fully-connected neural network for handwriting recognition. The architecture (and the neural network field) really took off
-in 2012 with the results published by Alex Krizhevsky in \cite{krizhevsky2012imagenet}. Krizhevsky's model, dubbed AlexNet, won the ImageNet \cite{deng2009imagenet} Large Scale Visual Recognition Challenge (ILSVRC) in 2012 by a handy margin. Since then several contributions have been made to CNN design - usually in the context of scoring very high in the ILSVRC \cite{simonyan2014very,szegedy2015going, he2015deep}.
-
-\subsubsection{Classification}
-Classification is likely the most basic task for which neural networks are used. Image classification specifically is the task of determining whether an image contains a certain class of object (e.g. a cat). State-of-the-art image classifiers are now approximately as good as humans at classifying images \cite{simonyan2014very, he2015deep}, and, regardless of how exotic they may look, they all use CNNs for feature extraction. Classification may or may
-not be an important part of target tracking: once the target is acquired, classifying that target correctly and keeping track of it are not necessarily the same thing. Some of the best target-tracking software in recent years make no attempt to identify the type of target they're tracking \cite{kalal2012tracking, Nebehay2015CVPR}.
-
-\subsubsection{Localization}
-Object localization is certainly an important part of target tracking, and is a more recent use of neural networks. Localization is the task of describing where in an image an object (or objects) lie. This is done by means of drawing a bounding box around the object, and evaluated by determining the amount of overlap between the predicted bounding box, and the ground-truth box.
-
-Obviously, localization is key to target tracking, as I not only wish to know whether the object is in the current frame, but also where it lies so that I may determine other important factors such as whether I need to turn the camera to follow it, or judge how far away it is.
-
-Object localization in usually performed by a fully-connected network or other simple classifier after image features are extracted by a CNN. However, other methods have also been developed. \cite{hong2015online} Demonstrates that back-propagating through a convolutional network can effectively yield a localization result. In fact, in that case, complex boundaries (as opposed to a simple bounding box) can be drawn around the target because object
-presence is evaluated on a per-pixel basis.
-
-\subsubsection{Recognition}
-Object recognition is also important for target tracking, specifically if I want the tracker to be able to detect the target autonomously. Currently many of the best visual trackers require that the target be identified by a bounding box in the initial frame of the video.
-
-However, for the proposed project, I do not assume that the target is necessarily in frame initially, or that a human operator is available to identify it. Rather, I would like to be able to provide a reference image to the program, and have it search for the target and find it if it appears in frame. Neural Networks have been used recently for vehicle recognition \cite{bautista2016convolutional, dong2014vehicle}, and it may be possible to use
-these networks as "spotters" for target acquisition (given a vehicle type or a reference image).
-
-Ideally, though, target acquisition is done through the same neural network that is used to track the object. Given that a CNN is already used in the model described by Hong \cite{hong2015online}, in may be possible that it would do target acquisition as well as tracking.
+One of the major difficulties posed by monocular target tracking in the domain of drone control is range estimation. Since the drone itself is presumed to be moving, and has real physical boundaries, it is important that the drone keep a safe distance from the target, or approach it at a reasonable speed. Because a pinhole camera provides a single 2D projection of a 3D space, range cannot be calculated directly, but must be estimated from the
+image. However \cite{dobrokhodov2006vision} shows that, if the target can be assumed to be a land vehicle, range estimation is not particularly difficult; although it is worth noting, that estimation noise is less tolerable as the UAV approaches the object, as in the case of making a landing.
 
 \subsection{Object Tracking}
 
-\subsubsection{Non-CNN methods}
+\subsubsection{Feature-based methods}
 
 Two major non-NN approaches have been taken to visual object-tracking using hand-crafted representations: Generative and Discriminative. Generative models attempt to use known occurrences of the object in past frames to generate an internal representation of the object. How this representation is built is the major issue: It must be robust enough that the object is not lost in the background - but it also must be flexible enough to tolerate object
 deformation, and changes in view. A recent example of a high performing generative model is in \cite{Nebehay2015CVPR}.
@@ -174,7 +127,8 @@ deformation, and changes in view. A recent example of a high performing generati
 Discriminative models, on the other hand, attempt to generate model of the background, seek to distinguish the object by discriminating it from its background.
 
 Other models, like the TLD model describe in \cite{kalal2012tracking}, a hybrid approach. In the case of TLD, two critic networks are trained estimate negative and positive instances of the target from the video sequence. This is then used to train an SVM to distinguish the target from its background.
-\subsubsection{CNN methods}
+
+\subsubsection{Neural-Network methods}
 
 However, in recent years, the best deep-learning trackers have far outstripped non-CNN trackers. However, target tracking is a significantly more challenging task than object recognition, especially due the the time-constraints required by the speed of video sequences. Several approaches have been taken to incorporate CNNs effectively into target-tracking programs. Perhaps the simplest approach is described in \cite{redmon2015you}. Tracking in this
 case is reduced to object classification and localization performed at real-time speed. It's worth noting that this approach is not a fully fledged target tracker, in that the CNN generates a bounding box for every object that surpasses a given threshold on any of the object classes. There is no way to pick a specific target to the exclusion of others. However, the work offers an important insight: that using a regression strategy for localizing
@@ -190,16 +144,64 @@ Recently, the availability of the large ImageNet 2015 object-tracking video data
 passes the input through a neural network, and compares the output to the output generated by a separate image on the same neural network. If the outputs are considered similar enough, the network predicts that they are the same object, otherwise, it predicts that they are different objects. Despite the simplicity of the approach in \cite{bertinetto2016fully}, the resulting target tracker achieves state-of-the-art performance
 and has an fps that more than 10 times faster than some other CNN trackers.
 
-\subsection{UAV target tracking}
+\subsection{Convolutional Neural Networks and Computer Vision}
+As noted above, CNNs have, in recent years, proved adept at image classification. The CNN architecture is a special case of the more general "feed-forward" architecture.
+\subsubsection{Feed-Forward Neural Networks}
+Feed-forward neural networks can be represented as an acyclic computational graph composed of "layers" of vertices, where each vertex is connected to any number of vertices in the layers adjacent to it, but not connected to any of the vertices in its own layer. Each edge in the graph has an associated weight, and the output of each vertex is the sum of the weighted outputs of the previous layer's vertices passed through some nonlinear function.
 
-Research on monocular, vision-based target tracking for UAVs appears sparse, despite continuing interest and advances in vision-based target tracking. For small, rotary wing drones I know of only a few previous attempts to automate target tracking \cite{basit2015joint,lin2012robust,boudjit2015detection}. In all of these works, the tracking and control logic is handled remotely and communicated to the drone via wifi. I wish, instead, to perform
-target-tracking and control logic onboard the UAV, mainly to eliminate the dependency on communication with a remote entity, but also to reduce latency in video processing and control decisions. Recent advances in computer hardware, notably the availability of low-power GPGPUs, allow for a computer to be carried on-board a small drone. Further, these small, highly parallel modules do not draw much power, so they do not require drones to carry
-larger batteries, and can compute large amounts of data in parallel, which means that neural networks can run quickly on them.
+Perhaps the simplest of these architectures is a "fully connected" neural network, in which each neuron (vertex) is connected to all neurons in the prior and subsequent layers. A small instance is shown in figure  \ref{fig:fcnn}. Indeed, fully connected neural networks have a wonderfully simple architecture when compared with CNNs and, for a similar number of parameters (edges), compute a forward pass significantly faster. However, the number of parameters in a
+fully connected neural networks grows very quickly with the size of the input ($O(n)^2$). For large and deep networks, the number of parameters becomes too large to keep in memory, and computation slows drastically. The CNN architecture reduces the total number of parameters by "sharing" them across neurons in a given layer. It turns out this method also preserves the spatial locality of image features, which is of obvious value in object localization and
+classification.
 
-It is also worth noting that all of the above papers use hand-crafted features for target tracking rather than learning methods, which I propose to use in this paper.
+\begin{figure}[h]
+\includegraphics[width=\linewidth]{img/FCNN.png}
+\caption{A fully connected neural network}
+\label{fig:fcnn}
+\end{figure}
 
-One of the major difficulties posed by monocular target tracking in the domain of drone control is range estimation. Since the drone itself is presumed to be moving, and has real physical boundaries, it is important that the drone keep a safe distance from the target, or approach it at a reasonable speed. Because a pinhole camera provides a single 2D projection of a 3D space, range cannot be calculated directly, but must be estimated from the
-image. However \cite{dobrokhodov2006vision} shows that, if the target can be assumed to be a land vehicle, range estimation is not particularly difficult; although it is worth noting, that estimation noise is less tolerable as the UAV approaches the object, as in the case of making a landing.
+\subsubsection{Convolutional Neural Network Architecture}
+The architecture of fully connected networks makes the naive assumption that any number of inputs may have a relationship with each other; that is, that, combined, they define a feature. In the image domain, where each element of the input vector is a pixel, this is almost never the case. It is far more likely that two adjacent pixels are related to each other (for example, are part of the same object) than it is that pixels on opposite edges of
+the image are. CNNs make use of this spatial relationship by grouping weights together into small, square \emph{filters} (also called \emph{kernels}) that are passed over the image in discrete steps. Each step represents a neuron in the next layer. So the weights in each filter are shared across neurons. This drastically reduces the number of parameters necessary for a network with large input, and uses the parameters more efficiently. This is especially true because the early layers of a
+deep neural network end up tasked with extracting low-level features - like straight lines and areas of intense color. These features are common throughout images, so it makes sense to use a single set of weights to look for them rather than an individual set for each area in the image.
+
+More formally, let $F$ and $I$ be two two-dimensional tensors of dimensions $n\times n$ and $m\times m$ respectively such that $m \ge n$ and $n = p * 2 + 1 : p \in \mathbb{N}$; that is, $p$ is odd. Now let $s$ be a positive integer such that $m$ is divisible by $s + 1$. Then the convolution of $F$ over $I$ is the two-dimensional tensor created by taking the dot product of $F$ with each sub-matrix of $I$ starting at the top-left most viable position for F
+(where the boundary of $F$ is flush with $I$) and taking strides of size $s$ row-wise and then column-wise and taking the dot product at each location. An example is shown in figure \ref{fig:CNN}.
+
+\begin{figure}[h]
+\includegraphics[width=\linewidth]{img/CNN.jpeg}
+\caption{A layer of convolutional filters and the resulting convolution volume with an input image}
+\label{fig:CNN}
+\end{figure}
+
+Fukushima proposed a convolutional architecture in \cite{fukushima1980neocognitron}, although the model did not use backpropagation (which was still not fully understood). The CNN architecture was first described in its present form by Yan LeCun in \cite{lecun1998gradient}, which used two convolutional layers followed by a deep, fully connected neural network for handwriting recognition. The architecture (and the neural network field) really took off
+in 2012 with the results published by Alex Krizhevsky in \cite{krizhevsky2012imagenet}. Krizhevsky's model, dubbed AlexNet, won the ImageNet \cite{deng2009imagenet} Large Scale Visual Recognition Challenge (ILSVRC) in 2012 by a handy margin. Since then several contributions have been made to CNN design - usually in the context of scoring very high in the ILSVRC \cite{simonyan2014very,szegedy2015going, he2015deep}.
+
+\subsubsection{Training}
+Training of all neural network architectures discussed herein is done through means of backpropagation. Backpropagation is decidedly the most popular means of training neural networks. While it was toyed with in the late 60s and 70s, it wasn't until the mid 80s that backpropagation was fully appreciated by the broader machine learning community \cite{hecht1989theory}. At it's core, backpropagation is the key to stochastic gradient descent, a method of searching
+the parameter space for a set of parameters that minimizes a provided \emph{loss function}. The duty of the loss function is to provide a real number that measures how the network performed on a given test set (lower is better).
+
+Backpropagation, then, is simply computing the derivative of the loss with respect to every parameter in the network, using chain rule to "propagate" local gradients backward through the graph. In short, it simply computes the gradient of the loss. Stochastic gradient descent is the process of computing the gradient of the loss (via backpropagation), and taking a small "step" in the opposite direction (the direction of maximum decrease of the loss). It is
+worth noting that backpropagation requires that the whole network be differentiable. However, linear combinations are always differentiable, so the making the graph differentiable boils down to making the activation function of the neurons differentiable.
+
+\subsubsection{Classification}
+Classification is likely the most basic task for which neural networks are used. Image classification specifically is the task of determining whether an image contains a certain class of object (e.g. a cat). State-of-the-art image classifiers are now approximately as good as humans at classifying images \cite{simonyan2014very, he2015deep}, and, regardless of how exotic they may look, they all use CNNs for feature extraction. Classification may or may
+not be an important part of target tracking: once the target is acquired, classifying that target correctly and keeping track of it are not necessarily the same thing. Some of the best target-tracking software in recent years make no attempt to identify the type of target they're tracking \cite{kalal2012tracking, Nebehay2015CVPR}.
+
+\subsubsection{Localization}
+Object localization is certainly an important part of target tracking, and is a more recent use of neural networks. Localization is the task of describing where in an image an object (or objects) lie. This is done by means of drawing a bounding box around the object, and evaluated by determining the amount of overlap between the predicted bounding box, and the ground-truth box.
+
+Obviously, localization is key to target tracking, as I not only wish to know whether the object is in the current frame, but also where it lies so that I may determine other important factors such as whether I need to turn the camera to follow it, or judge how far away it is.
+
+Object localization in usually performed by a fully connected network or other simple classifier after image features are extracted by a CNN. However, other methods have also been developed. \cite{hong2015online} Demonstrates that back-propagating through a convolutional network can effectively yield a localization result. In fact, in that case, complex boundaries (as opposed to a simple bounding box) can be drawn around the target because object
+presence is evaluated on a per-pixel basis.
+
+\subsubsection{Recognition}
+Object recognition is also important for target tracking, specifically if I want the tracker to be able to detect the target autonomously. Currently many of the best visual trackers require that the target be identified by a bounding box in the initial frame of the video.
+
+However, for the proposed project, I do not assume that the target is necessarily in frame initially, or that a human operator is available to identify it. Rather, I would like to be able to provide a reference image to the program, and have it search for the target and find it if it appears in frame. Neural Networks have been used recently for vehicle recognition \cite{bautista2016convolutional, dong2014vehicle}, and it may be possible to use
+these networks as "spotters" for target acquisition (given a vehicle type or a reference image).
+
+Ideally, though, target acquisition is done through the same neural network that is used to track the object. Given that a CNN is already used in the model described by Hong \cite{hong2015online}, in may be possible that it would do target acquisition as well as tracking.
 
 \section{Research Goals}
 
