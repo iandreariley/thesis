@@ -133,14 +133,21 @@ In even the most mundane circumstances, trackers must overcome a wide variety of
 
 \subsubsection{Feature-based methods}\label{feat_tracking}
 
-So-called "feature-based" methods of object tracking rely on image features computed by various image processing techniques (e.g. edges, histograms, optical flow) to generate models of the targeted object and of the background. Using these models, logic is implemented to find the object in each frame.
+So-called "feature-based" methods of object tracking rely on image features computed by various image processing techniques (e.g. edges, histograms, optical flow) to generate models of the targeted object and of the background. Using these models, logic is implemented to find the object in each frame. Two major non-NN approaches have been taken to visual object-tracking using hand-crafted representations: Generative and Discriminative. Generative models attempt to use known occurrences of the object in past frames to generate an internal representation of the object. How this representation is built is the major issue at hand in feature-based detection and tracking: It must be robust enough that the object is not lost in the background - but it also must be flexible enough to tolerate object deformation, and changes in view.
 
-Two major non-NN approaches have been taken to visual object-tracking using hand-crafted representations: Generative and Discriminative. Generative models attempt to use known occurrences of the object in past frames to generate an internal representation of the object. How this representation is built is the major issue: It must be robust enough that the object is not lost in the background - but it also must be flexible enough to tolerate object
-deformation, and changes in view. A recent example of a high performing generative model is in \cite{Nebehay2015CVPR}.
+Perhaps the most mature feature-based tracking architecture is the well-known Tracking Learning Detection (TLD) algorithm introduced by Kalal in \cite{kalal2012tracking}. In the taxonomy of trackers I use in this report (either learning-based or feature-based) TLD is best described as a hybrid method. It relies in part on image processing techniques and features to generate bounding boxes, but it also makes heavy use of machine learning. As the name implies, TLD decomposes the problem of robust, long-term object tracking into three distinct problems:
+\begin{enumerate}
+\item \emph{Tracking}: The problem of finding an object in a new image frame given its location in a previous frame.
+\item \emph{Detection}: The problem of finding an object in an image given a model of that object.
+\item \emph{Learning}: The problem of updating the detection algorithm to incorporate new views of the object being tracked.
+\end{enumerate}
+At first, the difference between tracking and detection may seem trivial. However, as Kalal points out, the two tasks are distinct because detection involves localizing an object within an image based on a object model, whereas tracking uses information about target location in previous frames to determine the target location in the current frame. This leads to two different kinds of errors: trackers tend to drift from their targets, and almost certainly fail when their target leaves frame and returns. Detectors, on the other hand, will always correctly detect the object assuming that it matches the object model with a certain degree of confidence. However, because object models are generally static, detectors fail when the appearance of the object changes via occlusion, rotation, deformation, etc. The key insight of TLD is to iteratively train the detection algorithm using a training set that is constantly updated with previously misclassified (false positive or false negative) image patches. Kalal uses a pair of expert systems, one for finding false positives and one for finding false negatives, to add new image patches to the training set at each time step. The detector is implemented as an ensemble of Bayesian classifiers and a nearest neighbor classifier that retrained on the training set at regular intervals.
+
+For the tracking component, Kalal uses the Median-Flow tracker he developed in \cite{kalal2010forward}. The Median-Flow tracker uses the concept of optical flow \cite{horn1981determining} to determine the frame-to-frame movement of keypoints on the object. The tracker uses optical flow to predict the new position of keypoints in each frame, and then eliminates some of them based on a confidence metric. Since the tracker is prone to drift and error, the detector is used to reinitialize the tracker if it drifts to far from the target.
+ 
+A recent example of a high performing generative model is in \cite{Nebehay2015CVPR}.
 
 Discriminative models, on the other hand, attempt to generate model of the background, seek to distinguish the object by discriminating it from its background.
-
-Other models, like the TLD model describe in \cite{kalal2012tracking}, a hybrid approach. In the case of TLD, two critic networks are trained estimate negative and positive instances of the target from the video sequence. This is then used to train an SVM to distinguish the target from its background.
 
 \subsubsection{Neural-Network methods}
 
