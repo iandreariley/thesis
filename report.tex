@@ -250,8 +250,6 @@ at a rate that allow the control system to effectively track the target, ideally
 conventional, feature-based tracker. While deep neural networks have been used successfully in target-tracking algorithms in recent years, they have, to the best of my knowledge, been tested exclusively on top-of-the-line, high-power GPUs, which are entirely unfeasible for deployment on small, battery-powered vehicles like copter drones. As stated above, an added performance constraint in this research is that the program be able to run on
 a low-power device that is a feasible companion computer for a battery-powered vehicle.
 \item Optimize the deep-learning-based tracker for a specific, low-power architecture. Often, neural networks are designed with a specific number of cores in mind. Since most deep-learning tracking approaches are built for GPUs with a large number (1024) of cores, they're design may not be optimal for a smaller device.
-\item Extend the functionality of the program described above to include target detection. Detection, as opposed to tracking, is the problem of searching for and discovering a target given a reference. In our case, the reference will be an image of the target outside of the current context (e.g., a picture of a car in a garage vs. on the street). While target tracking is important, we want the tracking vehicle to be completely
-autonomous, meaning that it should have no need of human input in real time. Without the capability of target detection, the program would need human input to identify the target on first sight.
 \end{enumerate}
 
 \section{Methodology}
@@ -270,12 +268,6 @@ It is possible, even likely, that a neural network designed with a 1024-core GPU
 a $7 \times 7$ filter has the same receptive field (area of the image that actually affects the output neuron at a given location) as $3  \times 3$ convolutional layers. However, the smaller filters will also incorporate more nonlinearity, and decrease both the number of parameters to learn (49 vs. 27) and the number of floating-point multiplies needed for a forward pass - all of which suggest improved performance and quality.
 My suggeston then, is to replace the large filters in the early stages of the Alexnet architecture with several smaller layers, and compare performance with the original implementation.
 However, changing the architecture means that I can no long take advantage of "transfer learning," the practice of using weights from one learned model (e.g. Alexnet), and transferring them to a different application with the same network structure. In this case, I will train the convolutional network myself, using the same strategy as described in \cite{bertinetto2016fully}.
-
-\subsection{Adding object recognition} \label{goal4}
-While the problem of object tracking technically has nothing to do with the problem of object detection, its easy to see that, from a practical application stand point, the two are deeply related. Tracking a target is of little use if one cannot first find the target to track. Again, from a practical view, we may assume that any application that specifies autonomous target-tracking would likely also specify autonomous
-target acquisition. Otherwise, a human being may have to specify the target before it could be tracked, which may be tedious or impossible in a given situation. Fortunately, because the Siamese architecture is essentially just a measure of correlation between the semantic features of two objects, we may also apply the same network to object detection. If, instead of using a region of the first image as a reference for the object, we
-use a known image of the object, it becomes clear that we can simply use the same method to detect the target's presence in any frame. The main change would be in selecting a region of the image in which to look for the object. For computational efficiency, the target tracking searches a region of the image that is centered on the last known location of the object. For object detection, I propose that, if the target is not
-currently in view, the algorithm switches to a detection mode wherein it searches for the object globally in each frame.
 
 \section{Results}
 
