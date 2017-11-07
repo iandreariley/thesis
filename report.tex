@@ -33,13 +33,35 @@
 % ]{courier.ttf}
 
 \doublespacing
+\newgeometry{left=1.5in, top=2in, right=1in, bottom=1in}
 \title{Target-Tracking Using Neural Networks on Low-Power Devices with Applications to UAVs}
 \author{Ian Riley}
 \date{December 2016}
 
 \begin{document}
 \pagenumbering{roman}
-\maketitle
+
+\begin{titlepage}
+	\begin{center}
+		\textbf{Target-Tracking Using Neural Networks on Low-Power Devices with Applications to UAVs}\\
+		\vspace{60pt}
+		A Thesis\\
+		Presented to the\\
+		Faculty of\\
+		California State Polytechnic University, Pomona\\
+		\vfill
+		In Partial Fulfillment\\
+		Of the Requirements for the Degree\\
+		Master of Science\\
+		In\\
+		Computer Science\\
+		\vspace{60pt}
+		By\\
+		Ian Riley\\
+		2017
+	\end{center}
+\end{titlepage}
+
 \thispagestyle{empty}
 
 \newpage
@@ -67,19 +89,20 @@ Department of Computer Science & \hrulefill \\
 \newpage
 \newgeometry{left=1.5in, top=1in, right=1in, bottom=1in}
 \section*{Acknowledgements}
-Completing this thesis would have been impossible were it not for the tremendous good fortune I've had to be surrounded by loving, intelligent, and supportive people. To Mom and Dad, first of all, for supporting your decreasingly youthful son while he played with computers into his mid-thirties. To Alexandra, for listening to me talk about computational graphs with something that passed for interest; you are first and last in my heart. To Devin, for the soundest career advice; wubba-wubba. To
+Completing this thesis would have been impossible were it not for the tremendous good fortune I've had to be surrounded by loving, intelligent, and supportive people. To Mom and Dad, first of all, for supporting your decreasingly youthful son while he played with computers. To Alexandra, for listening to me talk about neural networks with something that passed for interest; you are first and last in my heart. To Devin, for the soundest career advice; wubba-wubba. To
 Dr. Amar Raheja, for your ongoing academic and professional support; I owe you a debt of gratitude too large to repay here. To Dr. Subodh Bhandari, for teaching me to google. To Arvin, Joshua, Alex, Fernando, Miguel, and Rene; a finer group of aerospace engineers was never assembled. To Luca Bertinetto and Jack Valmadre, for publishing a fantastically elegant tracking algorithm, and then answering my thousand questions about how it works. To Jim at jetsonhacks.com, for rad technical support
 and radder jam sessions. To my friends, for giving me the thumbs up even when they probably shouldn't have.
 \newpage
-\begin{abstract}
-Recent advances in computer vision and general purpose graphic processing units (GPUs) have made the possibility of small, intelligent, vision-based robots a reality. In this research, I focus specifically on the problem of autonomous target-tracking by small, low-power devices.
-Automated target-tracking has long been a problem of interest in the field of computer vision. This is motivated by the fact that visual surveillance is a simple and tedious task. Yet truly robust solutions for visual target tracking have been illusive. The problem at the center of persistent target tracking, is how to make the tracking program robust to changes in the target's appearance. An ideal tracker would be robust to changes in object scale and rotation, changes in lighting,
-object deformation and full- or partial-occlusion. Recent advances in object classification using convolutional neural networks (CNNs) have made them popular for use in anything computer-vision related. Until recently a lack of sufficient labeled video data limited attempts at using CNNs for target tracking to hacking the features of trained object classifiers for spatial data, operations that are too expensive for the real-time requirements of target trackers. However,
-\cite{bertinetto2016fully} uses the recently released ImageNet video dataset to train a fully-convolutional network that is capable of tracking with state-of the art accuracy, at more than 10 times the speed of some CNN-based trackers.
-At the same time, computer hardware has become cheaper, faster, and increasingly focused on parallel processing. Because neural-network architecture is meant to mimic the highly parallel architecture of the brain, they pair naturally with massively parallel computer architectures like those of GPUs, which often have hundreds, if not thousands, of small, low-speed cores. The advance of GPU architecture has made running neural-networks at real-time speeds achievable. More recent
-GPUs have been designed specifically with low-power devices in mind. While they do not deliver the computational power of larger, high-power GPUs, they make highly-parallel processing available to battery-operated devices.
-In this research, we attempt to show that a real-time target-tracking software can be run on a small, low-power GPU that could feasibly be installed as a companion computer to a small robot, and give it target-tracking capabilities.
-\end{abstract}
+\section*{Abstract}
+Recent advances in computer vision and general purpose graphic processing units (GPUs) have led to significant advances in computer-vision-based object detection and tracking. Simultaneously, research on low-power computing has yielded battery-powered devices with enough compute power and memory to run resource-hungry algorithms like neural networks. At the same time, small unmanned aerial vehicles are drawing interest for a wide array of applications, like surveillance. Despite this confluence of events, there seems to be a dearth of research of research for onboard tracking for small UAVs.
+In this research I implement a small onboard tracking module intended for a hexcopter UAV. I implement two computer-vision-based tracking algorithms for the module and compare their performance. One is a so-called "feature-based" tracker, the other uses a convolutional neural network. The results show that while the neural-network-based method out-performs the feature-based method, but runs too slowly for a real-time application.
+%Automated target-tracking has long been a problem of interest in the field of computer vision. This is motivated by the fact that visual surveillance is a simple and tedious task. Yet truly robust solutions for visual target tracking have been illusive. The problem at the center of persistent target tracking, is how to make the tracking program robust to changes in the target's appearance. An ideal tracker would be robust to changes in object scale and rotation, changes in lighting,
+%object deformation and full- or partial-occlusion. Recent advances in object classification using convolutional neural networks (CNNs) have made them popular for use in anything computer-vision related. Until recently a lack of sufficient labeled video data limited attempts at using CNNs for target tracking to hacking the features of trained object classifiers for spatial data, operations that are too expensive for the real-time requirements of target trackers. However,
+%\cite{bertinetto2016fully} uses the recently released ImageNet video dataset to train a fully-convolutional network that is capable of tracking with state-of the art accuracy, at more than 10 times the speed of some CNN-based trackers.
+%At the same time, computer hardware has become cheaper, faster, and increasingly focused on parallel processing. Because neural-network architecture is meant to mimic the highly parallel architecture of the brain, they pair naturally with massively parallel computer architectures like those of GPUs, which often have hundreds, if not thousands, of small, low-speed cores. The advance of GPU architecture has made running neural-networks at real-time speeds achievable. More recent
+%GPUs have been designed specifically with low-power devices in mind. While they do not deliver the computational power of larger, high-power GPUs, they make highly-parallel processing available to battery-operated devices.
+%In this research, we attempt to show that a real-time target-tracking software can be run on a small, low-power GPU that could feasibly be installed as a companion computer to a small robot, and give it target-tracking capabilities.
+
 \newpage
 \tableofcontents
 
@@ -149,7 +172,7 @@ At first, the difference between tracking and detection may seem trivial. Howeve
 
 For the tracking component, Kalal uses the Median-Flow tracker he developed in \cite{kalal2010forward}. The Median-Flow tracker uses the concept of optical flow \cite{horn1981determining} to determine the frame-to-frame movement of keypoints on the object. The tracker uses optical flow to predict the new position of keypoints in each frame, and then eliminates some of them based on a confidence metric. Since the tracker is prone to drift and error, the detector is used to reinitialize the tracker if it drifts to far from the target.
  
-A more recent example of a high performing feature-based model is in \cite{Nebehay2015CVPR}. The central idea behind \cite{Nebehay2015CVPR} is to create two object models based on "keypoints", which are small, and presumably invariant, features of the object. One of the models is dynamic (i.e. it is updated during tracking) while the other is static. The static model is simply the first known occurrence of the object. This is presumably a trustworthy representation because it is selected by the user. The dynamic model is a set of keypoints that is updated at every time step. This model is necessary to deal with scaling, rotation, occlusion and object deformation. At each time step, optical flow is used to select a region of the image to scan for the target. Candidate keypoints are selected from this region and then paired with keypoints from the previous time step. A clustering algorithm is used find a likely center for the object. Matching keypoints are then evaluated based on a geometric dissimilarity metric, which is the main contribution of the paper. This metric is essentially a measure for object deformation. The algorithm tolerates only a certain amount of object deformation before it decides to reject the matching point in its representation of the object (the threshold for deformation is a hyperparameter to the algorithm, with 0 representing absolute rigidity). The most computationally intensive part of the algorithm is the clustering portion, which is if of order $O(n^2)$ complexity. However, empirically, $50 < n < 250$, so complexity never becomes a limiting factor.
+A more recent example of a high performing feature-based model is in \cite{Nebehay2015CVPR}. The central idea behind \cite{Nebehay2015CVPR} is to create two object models based on "keypoints", which are small, and presumably invariant, features of the object. One of the models is dynamic (i.e. it is updated during tracking) while the other is static. The static model is simply the first known occurrence of the object. This is presumably a trustworthy representation because it is selected by the user. The dynamic model is a set of keypoints that is updated at every time step. This model is necessary to deal with scaling, rotation, occlusion and object deformation. At each time step, optical flow is used to select a region of the image to scan for the target. Candidate keypoints are selected from this region and then paired with keypoints from the previous time step. A clustering algorithm is used to find a likely center for the object. Matching keypoints are then evaluated based on a geometric dissimilarity metric, which is the main contribution of the paper. This metric is essentially a measure for object deformation. The algorithm tolerates only a certain amount of object deformation before it decides to reject the matching point in its representation of the object (the threshold for deformation is a hyperparameter to the algorithm, with 0 representing absolute rigidity). The most computationally intensive part of the algorithm is the clustering portion, which is if of order $O(n^2)$ complexity. However, empirically, $50 < n < 250$, so complexity never becomes a limiting factor.
 
 Discriminative models, on the other hand, attempt to generate model of the background, seek to distinguish the object by discriminating it from its background.
 
@@ -241,19 +264,19 @@ the flexibility of pure learning algorithms, which can switch domains simply by 
 I desire an architecture that makes as few assumptions as possible and is applicable to as many domains as possible.
 \subsection{Problem Definition}
 
-I aim to make a target-tracking and acquisition system that can be run on an on-board computer on a small, hex-rotor drone. This target tracking system should be robust against object deformation, especially object magnification and partial occlusion, as I expect the system to keep track of the target even as the drone attempts to land on it.
+I aim to make a target-tracking and acquisition system that can be run on an on-board computer on a small, hex-rotor drone.
 
 \subsection{Goals}
 
 I break the problem into the following goals:
 
 \begin{enumerate}
-\item Create a vision-based, monocular target-tracking program that can be run on a small, low-power computer. This computer should draw a small enough amount of power, and be of dimensions such that it could conceivably be carried and run on-board a small rotary wing drone. The program should process video frames and return a bounding box around the target if it is present, or set a flag if it is not present. The program should process frames
-at a rate that allow the control system to effectively track the target, ideally at a rate $r \ge 20$ fps. It should also be robust to various common issues in target tracking: namely partial occlusion of target, object deformation and the target leaving and returning to frame. The program should not use deep-learning, but more conventional and less compute-intensive solutions like SIFT and RANSAC.
+\item Create a vision-based, monocular target-tracking program that can be run on a small, low-power computer. This computer should draw a small enough amount of power, and be of dimensions such that it could conceivably be carried and run on-board a small rotary wing drone. The program should process video frames and return a bounding box around the target. The program should process frames
+at a rate that allow the control system to effectively track the target, ideally at a rate $r \ge 20$ fps. It should also be robust to various common issues in target tracking: namely partial occlusion of target, object deformation and the target leaving and returning to frame.
 \item Create a program similar to the one mentioned above, except that its implementation should use deep-learning to track the target. The purpose here is twofold: This implementation will be used as a feasibility test for deep-learning-based tracking on low-power devices. Assuming that this implementation can run in real time, it will also be used to compare the performance of a deep-learning-based target tracking with a more
 conventional, feature-based tracker. While deep neural networks have been used successfully in target-tracking algorithms in recent years, they have, to the best of my knowledge, been tested exclusively on top-of-the-line, high-power GPUs, which are entirely unfeasible for deployment on small, battery-powered vehicles like copter drones. As stated above, an added performance constraint in this research is that the program be able to run on
 a low-power device that is a feasible companion computer for a battery-powered vehicle.
-\item Optimize the deep-learning-based tracker for a specific, low-power architecture. Often, neural networks are designed with a specific number of cores in mind. Since most deep-learning tracking approaches are built for GPUs with a large number (1024) of cores, they're design may not be optimal for a smaller device.
+%\item Optimize the deep-learning-based tracker for a specific, low-power architecture. Often, neural networks are designed with a specific number of cores in mind. Since most deep-learning tracking approaches are built for GPUs with a large number (1024) of cores, they're design may not be optimal for a smaller device.
 \end{enumerate}
 
 \section{Methodology}
@@ -266,12 +289,12 @@ I use the CMT algorithm described in \cite{Nebehay2015CVPR} as a feature-based l
 \subsection{Learning-based tracker} \label{goal2}
 I use the network architecture described in \cite{bertinetto2016fully} as the basis for a deep-learning based tracker. This algorithm is promising because it doesn't require computationally expensive operations like back-propagation, or learning an online model, as in other CNN-based trackers. Rather, \cite{bertinetto2016fully} uses a pair of CNNs called, collectively, a Siamese network. The basic concept behind Siamese networks is to use two identical networks to extract image features on both a candidate image and a reference image, and then use a simple distance metric to compare the representations of the images in feature space. The candidate image that minimizes that distance is considered to be the new target location. This approach is attractive for several reasons. First off, it is exceedingly simple. Since the reference image never changes, we may compute its features exactly once at the beginning of tracking. From that point on, each tracking step involves simply passing candidate images through the same network, and comparing the results to the reference features. As Bertinetto and Valmadre show, the benefit of such a simple architecture is a vastly improved frame rate. Specifically, they claim to achieve frame rates of around 85 fps, a great leap forward compared to other CNN-based trackers, which appear to hover at or below 15fps.
 
-\subsection{Improvements to the learning-based tracker} \label{goal3}
-It is possible, even likely, that a neural network designed with a 1024-core GPU in mind will not run particularly well on a single 256-core GPU. In that case, we may expect to see significant improvements to performance if the CNN architecture is changed to take into account the smaller number of cores. Furthermore, it is of note that Bertinetto uses the convolutional architecture of "Alexnet" as described in
-\cite{krizhevsky2012imagenet}. A particular feature of Alexnet that may have room for improvement is the size of its filters. the Alexnet filters start at size ($1 \times 11$, then proceeds to convolutions of $5 \times 5$, and then $3 \times 3$ for the final three convolutional layers. However, there is a strong argument for using smaller filters, and making up for the spatial loss by using a deeper network. Consider the fact that
-a $7 \times 7$ filter has the same receptive field (area of the image that actually affects the output neuron at a given location) as $3  \times 3$ convolutional layers. However, the smaller filters will also incorporate more nonlinearity, and decrease both the number of parameters to learn (49 vs. 27) and the number of floating-point multiplies needed for a forward pass - all of which suggest improved performance and quality.
-My suggeston then, is to replace the large filters in the early stages of the Alexnet architecture with several smaller layers, and compare performance with the original implementation.
-However, changing the architecture means that I can no long take advantage of "transfer learning," the practice of using weights from one learned model (e.g. Alexnet), and transferring them to a different application with the same network structure. In this case, I will train the convolutional network myself, using the same strategy as described in \cite{bertinetto2016fully}.
+%\subsection{Improvements to the learning-based tracker} \label{goal3}
+%It is possible, even likely, that a neural network designed with a 1024-core GPU in mind will not run particularly well on a single 256-core GPU. In that case, we may expect to see significant improvements to performance if the CNN architecture is changed to take into account the smaller number of cores. Furthermore, it is of note that Bertinetto uses the convolutional architecture of "Alexnet" as described in
+%\cite{krizhevsky2012imagenet}. A particular feature of Alexnet that may have room for improvement is the size of its filters. the Alexnet filters start at size ($1 \times 11$, then proceeds to convolutions of $5 \times 5$, and then $3 \times 3$ for the final three convolutional layers. However, there is a strong argument for using smaller filters, and making up for the spatial loss by using a deeper network. Consider the fact that
+%a $7 \times 7$ filter has the same receptive field (area of the image that actually affects the output neuron at a given location) as $3  \times 3$ convolutional layers. However, the smaller filters will also incorporate more nonlinearity, and decrease both the number of parameters to learn (49 vs. 27) and the number of floating-point multiplies needed for a forward pass - all of which suggest improved performance and quality.
+%My suggeston then, is to replace the large filters in the early stages of the Alexnet architecture with several smaller layers, and compare performance with the original implementation.
+%However, changing the architecture means that I can no long take advantage of "transfer learning," the practice of using weights from one learned model (e.g. Alexnet), and transferring them to a different application with the same network structure. In this case, I will train the convolutional network myself, using the same strategy as described in \cite{bertinetto2016fully}.
 
 \section{Results}
 
@@ -310,7 +333,7 @@ Speed is reported in frames per second (fps).
 
 All tracking algorithms were run on a Jetson TX1 running Linux for Tegra (L4T) Ubuntu 14.04 (Trusty Taur). All algorithms were implemented in python, and were modified minimally from the original code. Although the TX1 has 3.9 GiB of memory, only around 2.43 GiB memory is available in user space \textbf{[Why?]}. L4T Ubuntu is a multi-tasking OS, and is not the most efficient environment in which a tracker can run. However, it mimics the real environment in which a tracker would have to run on small drone, since the onboard computer would have to handle several tasks (e.g. communicating with ground control).
 
-\begin{figure}
+\begin{figure}[t]
 \centering
 \begin{subfigure}{.5\textwidth}
   \centering\captionsetup{width=.85\linewidth}%
@@ -324,9 +347,22 @@ All tracking algorithms were run on a Jetson TX1 running Linux for Tegra (L4T) U
   \caption{OPE plot for several trackers, SiamFC is the best performing.}
   \label{fig:ope_all}
 \end{subfigure}
-\caption{One-Pass Evaluation (OPE) results for the CMT and SiamFC trackers}
+\begin{subfigure}{.5\textwidth}
+  \centering\captionsetup{width=.85\linewidth}%
+  \includegraphics[width=\linewidth]{img/sre_vs.png}
+  \caption{SRE plot for the CMT and SiamFC trackers on a Jetson TX1}
+  \label{fig:ope_vs}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering\captionsetup{width=.85\linewidth}
+  \includegraphics[width=\linewidth]{img/sre_all.png}
+  \caption{SRE plot for several trackers, SiamFC is the best performing.}
+  \label{fig:ope_all}
+\end{subfigure}
+\caption{Online Tracking Benchmark esults for the CMT and SiamFC trackers}
 \label{fig:ope}
 \end{figure}
+
 
 \subsection{Tracking Results}\label{tracking_results}
 
