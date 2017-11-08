@@ -66,31 +66,31 @@
 
 \newpage
 {
-\setstretch{1.0}
-\begin{tabularx}{\textwidth}{lX}
-\textbf{Thesis} & Target-Tracking Using Neural Networks on Low-Power Devices with Applications to UAVs \\
-& \\
-\textbf{Author} & Ian Drea Riley \\
-& \\
-\textbf{Term Submitted} & Fall 2017 \\
-& \\
-Dr. Amar Raheja & \\
-Thesis Committee Chair & \\
-Department of Computer Science & \hrulefill \\
-& \\
-Dr. Subodh Bhandari & \\
-Department of Aerospace Engineering & \hrulefill \\
-& \\
-Dr. Hao Ji & \\
-Department of Computer Science & \hrulefill \\
-\end{tabularx}
+	\setstretch{1.0}
+	\begin{tabularx}{\textwidth}{lX}
+		\textbf{Thesis} & Target-Tracking Using Neural Networks on Low-Power Devices with Applications to UAVs \\
+		& \\
+		\textbf{Author} & Ian Drea Riley \\
+		& \\
+		\textbf{Term Submitted} & Fall 2017 \\
+		& \\
+		Dr. Amar Raheja & \\
+		Thesis Committee Chair & \\
+		Department of Computer Science & \hrulefill \\
+		& \\
+		Dr. Subodh Bhandari & \\
+		Department of Aerospace Engineering & \hrulefill \\
+		& \\
+		Dr. Hao Ji & \\
+		Department of Computer Science & \hrulefill \\
+	\end{tabularx}
 }
 
 \newpage
 \newgeometry{left=1.5in, top=1in, right=1in, bottom=1in}
 \section*{Acknowledgements}
-Completing this thesis would have been impossible were it not for the tremendous good fortune I've had to be surrounded by loving, intelligent, and supportive people. To Mom and Dad, first of all, for supporting your decreasingly youthful son while he played with computers. To Alexandra, for listening to me talk about neural networks with something that passed for interest; you are first and last in my heart. To Devin, for the soundest career advice; wubba-wubba. To
-Dr. Amar Raheja, for your ongoing academic and professional support; I owe you a debt of gratitude too large to repay here. To Dr. Subodh Bhandari, for teaching me to google. To Arvin, Joshua, Alex, Fernando, Miguel, and Rene; a finer group of aerospace engineers was never assembled. To Luca Bertinetto and Jack Valmadre, for publishing a fantastically elegant tracking algorithm, and then answering my thousand questions about how it works. To Jim at jetsonhacks.com, for rad technical support
+Completing this thesis would have been impossible were it not for the tremendous good fortune I've had to be surrounded by loving, intelligent, and supportive people. To Mom and Dad, first of all, for supporting your decreasingly youthful son while he played with computers. To Alexandra, for listening to me talk about neural networks with something that passed for interest; you are first and last in my heart. To Devin, for the soundest career advice; wubba-wubba. To my thesis committee:
+Dr. Amar Raheja, for your ongoing academic and professional support, I owe you a debt of gratitude too large to repay here; Dr. Subodh Bhandari, for teaching me to google; Dr Hao Ji for a most thorough introduction to neural networks. To Arvin, Joshua, Alex, Fernando, Miguel, and Rene; a finer group of aerospace engineers was never assembled. To Luca Bertinetto and Jack Valmadre, for publishing a fantastically elegant tracking algorithm, and then answering my thousand questions about how it works. To Jim at jetsonhacks.com, for rad technical support
 and radder jam sessions. To my friends, for giving me the thumbs up even when they probably shouldn't have.
 \newpage
 \section*{Abstract}
@@ -178,19 +178,25 @@ Discriminative models, on the other hand, attempt to generate model of the backg
 
 \subsubsection{Neural-Network methods}
 
-However, in recent years, the best deep-learning trackers have far outstripped non-CNN trackers. However, target tracking is a significantly more challenging task than object recognition, especially due the the time-constraints required by the speed of video sequences. Several approaches have been taken to incorporate CNNs effectively into target-tracking programs. Perhaps the simplest approach is described in \cite{redmon2015you}. Tracking in this
-case is reduced to object classification and localization performed at real-time speed. It's worth noting that this approach is not a fully fledged target tracker, in that the CNN generates a bounding box for every object that surpasses a given threshold on any of the object classes. There is no way to pick a specific target to the exclusion of others. However, the work offers an important insight: that using a regression strategy for localizing
-objects is far more efficient than using region proposal networks, and performs almost as well. This results in a CNN that can operate at real-time speed with very good performance, while other CNN models for localization are far too slow (on even the fastest hardware) to perform in real-time (which I define here as $\ge 20$ fps). The work in \cite{ning2016spatially} improves on \cite{redmon2015you} by using a recurrent neural network
-(RNN) to track the movement of objects through time. This is an intriguing direction because, unlike the following methods, the RNN is trained to recognize sequential image patterns (that is, the possible transformations an object can take given a current position).
+Several recent publications show that CNNs can make state-of-the-art target trackers. How the CNNs are used varies widely. Some extract features from pretrained CNN classifiers \cite{hong2015online}, while others use CNNs for object correlation \cite{bertinetto2016fully}. Perhaps the simplest approach is described in \cite{redmon2015you}. Tracking in this case is reduced to object classification and localization performed at real-time speed. It's worth noting that this approach is not a fully fledged target tracker, in that the CNN generates a bounding box for every object that surpasses a given threshold on any of the object classes. There is no way to pick a specific target to the exclusion of others. However, the work offers an important insight: that using a regression strategy for localizing objects is far more efficient than using region proposal networks, and performs almost as well. This results in a CNN that can operate at real-time speed with very good performance, while other CNN models for localization are far too slow (on even the fastest hardware) to perform in real-time (which I define here as $\ge 20$ fps). The work in \cite{ning2016spatially} improves on \cite{redmon2015you} by using a recurrent neural network (RNN) to track the movement of objects through time. This is an intriguing direction because, unlike the following methods, the RNN is trained to recognize sequential image patterns (that is, the possible transformations an object can take given a current position).
 
-\cite{wang2013learning} uses a deep auto-encoder to learn image features offline. Targets are then learned on-line using the features extracted from images by the auto-encoder. \cite{li2016deeptrack} trains an ensemble of CNNs on-line, starting with an initial known instance of the target, to differentiate the target from the background. \cite{hong2015online} uses the image features from a pretrained CNN to train a simple classifier (SVM) on-line to
-create a model of the target. Interestingly, Hong uses "deconvolution" to create a heat-map out of the input frame. The SVM then uses the heat-map to learn to find the target. So-called deconvolution is the process of back-tracking through the convolutions to find out which input data (pixels) most "excited" the neuron responsible for identifying the target. The work in \cite{wang2015visual} and \cite{ma2015hierarchical} actually seeks to discover the
-utility of each layer of a pre-trained CNN, and uses that knowledge to make a more informed model of the target. They show that certain convolutional layers encode views of the target from different perspectives, while other layers encode meaning like categorization. From these layers they develop a model of the target, and use it to track the target with high accuracy. A more complex approached, used in \cite{nam2015learning}, is to train
-domain-specific layers to the CNN that handle specific challenges (e.g. object rotation, object occlusion) in target-tracking. While complicated, the results appear more robust across various challenges.
+Prior to the release of the 2015 ImageNet object-tracking training set, there was no tracking-specific dataset large enough to train a deep CNN. However, several algorithms found ways to make use of CNNs' noted ability to extract features from images by training them on larger classification datasets. \cite{wang2013learning} uses a deep auto-encoder to learn image features offline. Targets are then learned on-line using the features extracted from images by the auto-encoder.  \cite{hong2015online} uses the image features from a pretrained CNN to train a simple classifier (SVM) on-line to create a model of the target. Interestingly, Hong uses "deconvolution" to create a heat-map out of the input frame. The SVM then uses the heat-map to learn to find the target. So-called deconvolution is the process of back-tracking through the convolutions to find out which input data (pixels) most "excited" the neuron responsible for identifying the target. The work in \cite{wang2015visual} and \cite{ma2015hierarchical} actually seeks to discover the utility of each layer of a pre-trained CNN, and uses that knowledge to make a more informed model of the target. They show that certain convolutional layers encode views of the target from different perspectives, while other layers encode meaning like categorization. From these layers they develop a model of the target, and use it to track the target with high accuracy. A more complex approached, used in \cite{nam2015learning}, is to train domain-specific layers to the CNN that handle specific challenges (e.g. object rotation, object occlusion) in target-tracking. While complicated, the results appear more robust across various challenges.
 
-Recently, the availability of the large ImageNet 2015 object-tracking video dataset has allowed for proper training of deep-learning based target-trackers. \cite{bertinetto2016fully} shows that, with this large amount of training data, a simple "Siamese" network can be trained to successfully track an object, without resorting to computationally expensive methods like back propagation or online learning. A Siamese network, simply, is one that
-passes the input through a neural network, and compares the output to the output generated by a separate image on the same neural network. If the outputs are considered similar enough, the network predicts that they are the same object, otherwise, it predicts that they are different objects. Despite the simplicity of the approach in \cite{bertinetto2016fully}, the resulting target tracker achieves state-of-the-art performance
-and has an fps that more than 10 times faster than some other CNN trackers.
+Recently, the availability of the large ImageNet 2015 object-tracking video dataset has allowed for proper training of deep-learning based target-trackers. These works focus on using a large video dataset to train CNNs for object correlation, and then using the resulting network to search patches of each image frame for the object. \cite{li2016deeptrack} trains an ensemble of CNNs on-line, starting with an initial known instance of the target, to differentiate the target from the background. In \cite{nam2016learning}, Nam et al. learn shared convolutional layers over the entire dataset, and then implement "domain-specific" fully-connected layers where a "domain" is a training sequence. During tracking, a final layers is learned online from the output of the domain networks. Further, the domain specific layers are fine-tuned online. The resulting algorithm, dubbed MDNet (multi-domain network), achieves outstanding results, although its frame-rate is around 1 fps on top-of-the-line hardware, making it unsuitable for realtime tracking. The SANet algorithm described in \cite{fan2016sanet} improves upon these results somewhat by using a recurrent neural network (RNN) to encode information about the object's structure. This is largely to avoid errors in tracking introduced by "distractors" near the target, i.e. similar looking objects that are near or overlap with the target to be tracked (e.g. when tracking a person in a crowd, it is easy for the tracker to drift to the wrong individual). The frame-rate, however, is again too low to be considered for realtime tracking.
+
+The work of Bertinetto and Valmadre in \cite{bertinetto2016fully}, which I use for the implementation of a deep-learning-based tracking algorithm, shows that, with this large amount of training data, a simple "Siamese" network can be trained to successfully track an object, without resorting to computationally expensive methods like back propagation or online learning. Despite the simplicity of the algorithm in \cite{bertinetto2016fully} (dubbed SiamFC by its authors for "siamese fully convolutional"), the resulting target tracker achieves near state-of-the-art performance and has an fps more than 10 times faster than some other CNN trackers.
+
+The Siamese network in \cite{bertinetto2016fully} is actually a single network (or single set of weights) trained to correlate two images. The network is fully convolutional (meaning it has no fully-connected layers, and no "padding" in the traditional sense), and uses an architecture similar to the convolutional layers of Alexnet in \cite{krizhevsky2012imagenet}. First, feature vectors of each image are extracted by passing them through the network. Then the two feature vectors are compared to each other with some sort of similarity metric (in this case, the dot product of the two vectors is used). During training, the network is taught to minimize the distance (i.e. maximize the similarity) between image patches containing the same object, and maximize the distance between those that do not. During the inference stage, if the outputs are considered similar enough (the dot product is close to zero), the network predicts that they are the same object, otherwise, it predicts that they are different objects.
+
+One of the benefits of the fully-convolutional architecture of the Siamese network in \cite{bertinetto2016fully} is that it can take image patches of any size greater than or equal to the receptive field of the final layer of the network (in this case, the receptive field is $127 \times 127$). Bertinetto and Valmadre use this to their advantage by using a larger "search" image patch at each frame that generates a map of features at adjacent locations in the image. The feature vector of the object (which is taken from the only known occurrence of the object in the first frame) is then correlated in discrete steps over each of these locations to generate a "score" map, where the top score is taken to be the true location of the object. This makes for extremely fast and precise localization. A diagram of the architecture is shown in figure \ref{fig:siamese}.
+
+\begin{figure}[h]
+	\includegraphics[width=\linewidth]{img/siamesefc_conv-explicit.jpg}
+	\caption{Siamese network as described in \cite{bertinetto2016fully}. In this case $\varphi$ is the CNN function. The dot product of extracted features of the template and the search image are taken at every location in the search image. The smallest dot 			      product is considered the most likely location of the object.}
+	\label{fig:siamese}
+\end{figure}
+
+Rather than perform an exhaustive search for the object at each time step, SiamFC generates a set of image patches at 5 different scales centered on the previous object location and generates a score map for each using the Siamese network. A cosine window is then added to the scores to penalize translation from the center of the previous location, and score maps are penalized by the degree of scaling. Finally the maximum score from all score maps is chosen as the new location of the object.
 
 \subsection{Convolutional Neural Networks and Computer Vision}
 As noted above, CNNs have, in recent years, proved adept at image classification. The CNN architecture is a special case of the more general "feed-forward" architecture.
@@ -208,9 +214,7 @@ classification.
 \end{figure}
 
 \subsubsection{Convolutional Neural Network Architecture}
-The architecture of fully connected networks makes the naive assumption that any number of inputs may have a relationship with each other; that is, that, combined, they define a feature. In the image domain, where each element of the input vector is a pixel, this is almost never the case. It is far more likely that two adjacent pixels are related to each other (for example, are part of the same object) than it is that pixels on opposite edges of
-the image are. CNNs make use of this spatial relationship by grouping weights together into small, square \emph{filters} (also called \emph{kernels}) that are passed over the image in discrete steps. Each step represents a neuron in the next layer. So the weights in each filter are shared across neurons. This drastically reduces the number of parameters necessary for a network with large input, and uses the parameters more efficiently. This is especially true because the early layers of a
-deep neural network end up tasked with extracting low-level features - like straight lines and areas of intense color. These features are common throughout images, so it makes sense to use a single set of weights to look for them rather than an individual set for each area in the image.
+The architecture of fully connected networks makes the naive assumption that any number of inputs may have a relationship with each other; that is, that, combined, they define a feature. In the image domain, where each element of the input vector is a pixel, this is almost never the case. It is far more likely that two adjacent pixels are related to each other (for example, are part of the same object) than it is that pixels on opposite edges of the image are. CNNs make use of this spatial relationship by grouping weights together into small, square \emph{filters} (also called \emph{kernels}) that are passed over the image in discrete steps. Each step represents a neuron in the next layer. So the weights in each filter are shared across neurons. This drastically reduces the number of parameters necessary for a network with large input, and uses the parameters more efficiently. This is especially true because the early layers of a deep neural network end up tasked with extracting low-level features - like straight lines and areas of intense color. These features are common throughout images, so it makes sense to use a single set of weights to look for them rather than an individual set for each area in the image.
 
 More formally, let $F$ and $I$ be two two-dimensional tensors of dimensions $n\times n$ and $m\times m$ respectively such that $m \ge n$ and $n = p * 2 + 1 : p \in \mathbb{N}$; that is, $p$ is odd. Now let $s$ be a positive integer such that $m$ is divisible by $s + 1$. Then the convolution of $F$ over $I$ is the two-dimensional tensor created by taking the dot product of $F$ with each sub-matrix of $I$ starting at the top-left most viable position for F
 (where the boundary of $F$ is flush with $I$) and taking strides of size $s$ row-wise and then column-wise and taking the dot product at each location. An example is shown in figure \ref{fig:CNN}.
