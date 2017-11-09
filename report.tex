@@ -286,7 +286,7 @@ a low-power device that is a feasible companion computer for a battery-powered v
 \section{Methodology}
 
 \subsection{Hardware}
-\textbf{Onboard Tracking Computer:} I use the Nvidia Jetson TX1 SoC as the onboard computer for all target tracking and navigation purposes. The TX1 is ideal for this application. It consists of an ARM CPU and a GPU of 256 CUDA cores. GPUs are essential for fast processing of neural networks. Neural networks require a large number of computations for each forward pass, however many of these can be done in parallel. Because GPUs consist of hundreds of cores, they can process neural networks much faster than conventional CPUs even when the clock rate of an individual core is significantly slower. Both the ARM architecture of the CPU and the Maxwell architecture of the GPU emphasize power efficiency. Even under a heavy load, the TX1 draws a maximum of 16W, while similar sized computers with CISC architectures can draw upwards of 50W. The power efficiency makes it perfect for battery powered applications. The TX1 and its motherboard are pictured in figures \ref{fig:SoC} and \ref{fig:devkit} respectively. The TX1 is also outfitted with a 60GB SSD drive for extra storage, and to support a swap file, which was necessary for building some libraries from source.
+\textbf{Onboard Tracking Computer:} I use the Nvidia Jetson TX1 SoC as the onboard computer for all target tracking and navigation purposes. The TX1 is ideal for this application. It consists of an ARM CPU and a GPU of 256 CUDA cores. GPUs are essential for fast processing of neural networks. Neural networks require a large number of computations for each forward pass, however many of these can be done in parallel. Because GPUs consist of hundreds of cores, they can process neural networks much faster than conventional CPUs even when the clock rate of an individual core is significantly slower. Both the ARM architecture of the CPU and the Maxwell architecture of the GPU emphasize power efficiency. Even under a heavy load, the TX1 draws a maximum of 16W, while similar sized computers with CISC architectures can draw upwards of 50W. The power efficiency makes it perfect for battery powered applications. The TX1 and its motherboard are pictured in figures \ref{fig:SoC} and \ref{fig:devkit} respectively. I connected  a 60GB SSD drive to the TX1's SATA port for extra storage, and to support a swap file, which was necessary for building some libraries from source.
 
 \begin{figure}[h]
 	\centering
@@ -324,6 +324,7 @@ a low-power device that is a feasible companion computer for a battery-powered v
 		\caption{Logitech C310}
 		\label{fig:logitech}
 	\end{subfigure}%
+	\caption{Pixhawk and Logitech C310 camera}
 	\label{fig:camhawk}
 \end{figure}
 
