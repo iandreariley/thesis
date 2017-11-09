@@ -285,7 +285,47 @@ a low-power device that is a feasible companion computer for a battery-powered v
 
 \section{Methodology}
 
-For our hardware, I will use the commercially available and relatively inexpensive NVidia Jetson TX1 GPGPU. In tests, the TX1 draws a maximum of 16 watts of power, a low enough energy footprint to run on a small drone. Specifically, I propose the following 
+\subsection{Hardware}
+\textbf{Onboard Tracking Computer:} I use the Nvidia Jetson TX1 SoC as the onboard computer for all target tracking and navigation purposes. The TX1 is ideal for this application. It consists of an ARM CPU and a GPU of 256 CUDA cores. GPUs are essential for fast processing of neural networks. Neural networks require a large number of computations for each forward pass, however many of these can be done in parallel. Because GPUs consist of hundreds of cores, they can process neural networks much faster than conventional CPUs even when the clock rate of an individual core is significantly slower. Both the ARM architecture of the CPU and the Maxwell architecture of the GPU emphasize power efficiency. Even under a heavy load, the TX1 draws a maximum of 16W, while similar sized computers with CISC architectures can draw upwards of 50W. The power efficiency makes it perfect for battery powered applications. The TX1 and its motherboard are pictured in figures \ref{fig:SoC} and \ref{fig:devkit} respectively. The TX1 is also outfitted with a 60GB SSD drive for extra storage, and to support a swap file, which was necessary for building some libraries from source.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+  		\centering\captionsetup{width=.85\linewidth}
+		\includegraphics[width=\linewidth]{img/nvidia_tx1.jpg}
+		\caption{Nvidia TX1 System on a Chip}
+		\label{fig:SoC}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering\captionsetup{width=.85\linewidth}%
+		\includegraphics[width=\linewidth]{img/JTX1_devkit.png}
+		\caption{Nvidia TX1 installed on the TX1 development kit motherboard}
+		\label{fig:devkit}
+	\end{subfigure}%
+	\caption{TX1 Development Kit and SoC}
+	\label{fig:tx1}
+\end{figure}
+
+\noindent\textbf{Flight Controller:} For the flight controller, I use a 3DR Pixhawk (figure \ref{fig:pixhawk}). The target-tracking computer (TX1) and the Pixhawk communicate over a serial connection using the MAVLink protocol. The target-tracking computer sends navigation directions via the serial connection, while the pixhawk sends status updates at regular intervals.
+
+\noindent\textbf{Camera:} I use a Logitech C310 for image capture (figure \ref{fig:logitech}). Images are transmitted to the target-tracking computer via USB.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.85\linewidth]{img/pixhawk.jpg}
+		\caption{3DR Pixhawk}
+		\label{fig:pixhawk}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.85\linewidth]{img/logitech.jpeg}
+		\caption{Logitech C310}
+		\label{fig:logitech}
+	\end{subfigure}%
+	\label{fig:camhawk}
+\end{figure}
 
 \subsection{Non-learning-based implementation} \label{goal1}
 I use the CMT algorithm described in \cite{Nebehay2015CVPR} as a feature-based learning tracking implementation. The results of this tracker show good performance, it is capable of running at a near-real-time frame rate (~10 fps) on the Jetson TX1, and the code is openly available, so it should be easy to implement. 
@@ -363,7 +403,7 @@ All tracking algorithms were run on a Jetson TX1 running Linux for Tegra (L4T) U
   \caption{SRE plot for several trackers, SiamFC is the best performing.}
   \label{fig:ope_all}
 \end{subfigure}
-\caption{Online Tracking Benchmark esults for the CMT and SiamFC trackers}
+\caption{Online Tracking Benchmark results for the CMT and SiamFC trackers}
 \label{fig:ope}
 \end{figure}
 
