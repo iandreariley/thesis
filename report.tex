@@ -11,6 +11,9 @@
 \usepackage{hyperref}
 \usepackage{tabularx}
 \usepackage{makecell, multirow}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
 
 % \usepackage{fontspec}
 
@@ -286,7 +289,9 @@ a low-power device that is a feasible companion computer for a battery-powered v
 \section{Methodology}
 
 \subsection{Hardware}
-\textbf{Onboard Tracking Computer:} I use the Nvidia Jetson TX1 SoC as the onboard computer for all target tracking and navigation purposes. The TX1 is ideal for this application. It consists of an ARM CPU and a GPU of 256 CUDA cores. GPUs are essential for fast processing of neural networks. Neural networks require a large number of computations for each forward pass, however many of these can be done in parallel. Because GPUs consist of hundreds of cores, they can process neural networks much faster than conventional CPUs even when the clock rate of an individual core is significantly slower. Both the ARM architecture of the CPU and the Maxwell architecture of the GPU emphasize power efficiency. Even under a heavy load, the TX1 draws a maximum of 16W, while similar sized computers with CISC architectures can draw upwards of 50W. The power efficiency makes it perfect for battery powered applications. The TX1 and its motherboard are pictured in figures \ref{fig:SoC} and \ref{fig:devkit} respectively. I connected  a 60GB SSD drive to the TX1's SATA port for extra storage, and to support a swap file, which was necessary for building some libraries from source.
+\textbf{Onboard Tracking Computer:} I use the Nvidia Jetson TX1 SoC as the onboard computer for all target tracking and navigation purposes. The TX1 is ideal for this application. It consists of an ARM-64 CPU and a GPU of 256 CUDA cores. GPUs are essential for fast processing of neural networks. Neural networks require a large number of computations for each forward pass, however many of these can be done in parallel. Because GPUs consist of hundreds of cores, they can process neural networks much faster than conventional CPUs even when the clock rate of an individual core is significantly slower. Both the ARM architecture of the CPU and the Maxwell architecture of the GPU emphasize power efficiency. Even under a heavy load, the TX1 draws a maximum of 16W, while similar sized computers with CISC architectures can draw upwards of 50W. The power efficiency makes it perfect for battery powered applications. The TX1 and its motherboard are pictured in figures \ref{fig:SoC} and \ref{fig:devkit} respectively. I connected  a 60GB SSD drive to the TX1's SATA port for extra storage, and to support a swap file, which was necessary for building some libraries from source.
+
+\noindent\textbf{Motherboard:} I use the Nvidia Jetson TX1 Carrier Board as the motherboard for the TX1. The board has a micro-ATX form factor, which makes it large for embedded applications. Nevertheless, it has ample ports that allow for a flexible development environment. Future work might attempt to use a smaller, more minimal motherboard to reduce size and weight.
 
 \begin{figure}[h]
 	\centering
@@ -299,7 +304,7 @@ a low-power device that is a feasible companion computer for a battery-powered v
 	\begin{subfigure}{.5\textwidth}
 		\centering\captionsetup{width=.85\linewidth}%
 		\includegraphics[width=\linewidth]{img/JTX1_devkit.png}
-		\caption{Nvidia TX1 installed on the TX1 development kit motherboard}
+		\caption{Nvidia TX1 installed on the TX1 development kit carrier board}
 		\label{fig:devkit}
 	\end{subfigure}%
 	\caption{TX1 Development Kit and SoC}
@@ -328,8 +333,57 @@ a low-power device that is a feasible companion computer for a battery-powered v
 	\label{fig:camhawk}
 \end{figure}
 
+\noindent\textbf{DJI S900:} The intended drone for this application is a DJI S900 hexacopter (figure \ref{fig:drone}), although it may be used with any drone assuming the Pixhawk is properly calibrated.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=.6\textwidth]{img/dji.jpg}
+	\caption{DJI S900 hexacopter}
+	\label{fig:drone}
+\end{figure}
+
 \subsection{Software Stack}
-\textbf{Environment:} All code for this research is written in Python 2.7.
+\noindent\textbf{Environment:} All code for this project was written in Python to run on the Nvidia Jetson TX1. The operating system is the Linux for Tegra (L4T) variant of Ubuntu 14.04 (Trusty Taur). I used the Python 2.7 runtime environment, rather than 3.x, because the source code for the tracking algorithms is available only in 2.7. Prior to development, the TX1 was also flashed with Nvidia Jetpack 2.3.1. Jetpack is a disk image that packages the following tools and libraries: CUDA \cite{nickolls2008scalable} 8.0, Nvidia's API to for parallel programming on their GPUs; cuDNN 7.0, a CUDA library for speeding up neural networks on Nvidia GPUs.
+
+\noindent\textbf{CMT:} The authors of \cite{Nebehay2015CVPR} make the code for their paper available on Github \cite{cmt}. We use it to test the feasibility of a feature-based tracker.
+
+\noindent\textbf{SiamFC:} The authors of \cite{bertinetto2016fully} make a Python port (the original code is in Matlab) of their algorithm available on Github \cite{siamfc}. We use it to test the feasibility of a deep-learning-based tracker.
+
+\noindent\textbf{OpenCV:} OpenCV \cite{opencv_library}, an open source computer vision library, is a dependency of the Python implementation of the CMT algorithm, which is used for one of the tracking algorithms. OpenCV also provides convenient and fast methods for displaying images, which are used for visualizing tracking performance.
+
+\noindent\textbf{Tensorflow v0.11:} Tensorflow \cite{tensorflow2015-whitepaper} is an open source computational graph library developed and maintained by Google. It is used widely as a library for building, training and running neural networks, and is a dependency for the Python implementation of the SiamFC algorithm, which is used as one of the tracking algorithms.
+
+\noindent\textbf{NumPy:} NumPy (short for numeric Python) \cite{walt2011numpy} is a python library for matrix and tensor operations. It also provides packages for reading images from files that are used in this work for running the Online Tracking Benchmark \cite{wu2013online}.
+
+\noindent\textbf{APSync:} Apsync \cite{apsync} is a suite of scripts for onboard computers that allow for data logging, data transfer, and rapid remote access over wifi. Apsync is used in this research as a way to connect with the TX1 while in flight.
+
+\noindent\textbf{MAVLink:} MAVLink \cite{mavlink} is a library for lightweight messaging between or to and from drones. It supports several languages. The Python bindings are used in this research to transmit messages between the Pixhawk and the TX1.
+
+\noindent\textbf{Note:} The Jetson TX1 is not, as yet, well supported in python. Both OpenCV and Tensorflow had to be built from source, and required several patches in order to make them run properly on the TX1. In the case of Tensorflow 0.11, some knowledge of the build tool Bazel is required, as several of the dependency URLs are out of date. The Tensorflow build also requires more physical memory (around 10GB) than is available on the TX1 (8GB). In order to provide the requisite memory, a SATA SSD was installed on the TX1 and a swap file added. The scripts provided by the Jetsonhacks \cite{jetsonhacks2016} repository on Github served as a starting point for the Tensorflow build. It should be noted that the more recent commits update the Tensorflow version to 1.3, which is current as of this writing. The commit referenced in the notes gives the state of the files when they were used for this work (and install Tensorflow 0.11).
+
+\subsection{Implementation}
+\noindent\textbf{Hardware Setup:} The logitech C310 camera is connected to the TX1 via the carrier board's USB port. The Pixhawk is connected to the TX1 via a UART serial connection. The serial wires run from the UART pins on the carrier board's expansion header to the "telemetry-2" port on the Pixhawk. It's important to note that the power serial wire is NOT used, as this can damage to the Pixhawk. Only the ground, transmit, receive, request-to-send, and clear-to-send pins should be connected to the Pixhawk's telemetry-2 port (These correspond to pins 6, 8, 10, 11 and 36 on the carrier board's expansion header, respectively). The power wire should be disconnected (or absent). The Pixhawk is powered externally by the battery.
+
+\noindent\textbf{Software:} The main function of the tracking algorithm implemented for this research can be described by the following algorithm:
+
+\begin{algorithm}
+\begin{algorithmic}[1]
+	
+	\State $frame \gets$ current image from camera feed
+	\State $position \gets$ target position from user
+	\State initialize tracking algorithm with $frame$ and $position$\\
+	
+	\While{User has not hit stop key}
+		\State $frame \gets$ current image from camera feed
+		\State $position \gets$ result of tracking algorithm on $frame$
+		\State $velocity \gets$ new velocity vector calculated from $position$
+		\State update drone velocity and heading with $velocity$
+	\EndWhile\\
+	
+\end{algorithmic}
+\end{algorithm}
+
+The first two lines of the algorithm are fairly trivial. OpenCV provides an API for reading images from files, which makes reading from a camera simple, since UNIX systems treat all devices as files. OpenCV also provides an API for drawing shapes as well as for tracking mouse movement, which the code in \cite{Nebehay2015CVPR} uses to make a simple GUI for the user to draw a bounding box around the target, and which I use in the tracking code.
 
 \subsection{Non-learning-based implementation} \label{goal1}
 I use the CMT algorithm described in \cite{Nebehay2015CVPR} as a feature-based learning tracking implementation. The results of this tracker show good performance, it is capable of running at a near-real-time frame rate (~10 fps) on the Jetson TX1, and the code is openly available, so it should be easy to implement. 
