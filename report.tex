@@ -6,7 +6,7 @@
 \usepackage{subcaption}
 \usepackage{amssymb}
 \usepackage{amsmath}
-\usepackage{geometry}
+\usepackage[left=1.5in, top=1in, right=1in, bottom=1in]{geometry}
 \usepackage{setspace}
 \usepackage{hyperref}
 \usepackage{tabularx}
@@ -45,6 +45,8 @@
 \pagenumbering{roman}
 
 \begin{titlepage}
+
+	\thispagestyle{empty}
 	\begin{center}
 		\textbf{Target-Tracking Using Neural Networks on Low-Power Devices with Applications to UAVs}\\
 		\vspace{60pt}
@@ -65,32 +67,41 @@
 	\end{center}
 \end{titlepage}
 
-\thispagestyle{empty}
-
 \newpage
+\newgeometry{top=1in}
+\section*{Signature Page}
+\addtocounter{page}{1}
 {
 	\setstretch{1.0}
 	\begin{tabularx}{\textwidth}{lX}
-		\textbf{Thesis} & Target-Tracking Using Neural Networks on Low-Power Devices with Applications to UAVs \\
 		& \\
-		\textbf{Author} & Ian Drea Riley \\
 		& \\
-		\textbf{Term Submitted} & Fall 2017 \\
+		\textbf{\uppercase{Thesis:}} & \uppercase{Target-Tracking Using Neural Networks on Low-Power Devices with Applications to UAVs} \\
 		& \\
-		Dr. Amar Raheja & \\
+		& \\
+		\textbf{\uppercase{Author:}} & Ian Drea Riley \\
+		& \\
+		& \\
+		\textbf{\uppercase{Term Submitted:}} & Fall 2017 \\
+		& \\
+		& Computer Science Department \\
+		& \\
+		& \\
+		Dr. Amar Raheja & \hrulefill \\
 		Thesis Committee Chair & \\
-		Department of Computer Science & \hrulefill \\
+		Department of Computer Science & \\
 		& \\
-		Dr. Subodh Bhandari & \\
-		Department of Aerospace Engineering & \hrulefill \\
 		& \\
-		Dr. Hao Ji & \\
-		Department of Computer Science & \hrulefill \\
+		Dr. Subodh Bhandari & \hrulefill \\
+		Department of Aerospace Engineering & \\
+		& \\
+		& \\
+		Dr. Hao Ji & \hrulefill \\
+		Department of Computer Science & \\
 	\end{tabularx}
 }
 
 \newpage
-\newgeometry{left=1.5in, top=1in, right=1in, bottom=1in}
 \section*{Acknowledgements}
 Completing this thesis would have been impossible were it not for the tremendous good fortune I've had to be surrounded by loving, intelligent, and supportive people. To Mom and Dad, first of all, for supporting your decreasingly youthful son while he played with computers. To Alexandra, for listening to me talk about neural networks with something that passed for interest; you are first and last in my heart. To Devin, for the soundest career advice; wubba-wubba. To my thesis committee:
 Dr. Amar Raheja, for your ongoing academic and professional support, I owe you a debt of gratitude too large to repay here; Dr. Subodh Bhandari, for teaching me to google; Dr. Hao Ji for a most thorough introduction to neural networks. To Arvin, Joshua, Alex, Fernando, Miguel, and Rene; a finer group of aerospace engineers was never assembled. To Luca Bertinetto and Jack Valmadre, for publishing a fantastically elegant tracking algorithm, and then answering my thousand questions about how it works. To Jim at jetsonhacks.com, for rad technical support
