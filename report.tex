@@ -15,7 +15,8 @@
 \usepackage{algorithm}
 \usepackage{algorithmicx}
 
-% \usepackage{fontspec}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
 
 % Load Fonts
 % \setromanfont[
@@ -145,6 +146,7 @@ In this thesis, I present two implementations of an onboard target-tracking modu
 
 %A further complication is that small drones operate on very small power supplies. The fastest GPGPUs, which are often the test hardware for the previously mentioned target-tracking architectures, have TDPs of around 250 watts - far too much power for a quad-copter to deliver on its limited power supply. Recent GPGPU designs geared specifically for low-power applications have made it possible to run complex parallel applications like CNNs in low-power environments, like a small battery-powered drone. Although they do not provide as much computational power as their larger, more power-hungry counterparts, it is our hope that I may successfully run neural-network-based target tracking software on these modules, in flight. 
 
+\newpage
 \section{Literature Review}
 
 \subsection{UAV target tracking}
@@ -267,6 +269,7 @@ these networks as "spotters" for target acquisition (given a vehicle type or a r
 
 Ideally, though, target acquisition is done through the same neural network that is used to track the object. Given that a CNN is already used in the model described by Hong \cite{hong2015online}, in may be possible that it would do target acquisition as well as tracking.
 
+\newpage
 \section{Research Goals}
 
 \subsection{Motivation}
@@ -295,6 +298,7 @@ a low-power device that is a feasible companion computer for a battery-powered v
 %\item Optimize the deep-learning-based tracker for a specific, low-power architecture. Often, neural networks are designed with a specific number of cores in mind. Since most deep-learning tracking approaches are built for GPUs with a large number (1024) of cores, they're design may not be optimal for a smaller device.
 \end{enumerate}
 
+\newpage
 \section{Methodology}
 
 \subsection{Hardware}
@@ -422,6 +426,7 @@ I use the network architecture described in \cite{bertinetto2016fully} as the ba
 %My suggeston then, is to replace the large filters in the early stages of the Alexnet architecture with several smaller layers, and compare performance with the original implementation.
 %However, changing the architecture means that I can no long take advantage of "transfer learning," the practice of using weights from one learned model (e.g. Alexnet), and transferring them to a different application with the same network structure. In this case, I will train the convolutional network myself, using the same strategy as described in \cite{bertinetto2016fully}.
 
+\newpage
 \section{Results}
 
 \subsection{Deliverables}
@@ -494,6 +499,7 @@ All tracking algorithms were run on a Jetson TX1 running Linux for Tegra (L4T) U
 
 Figure \ref{fig:ope} shows the results of the OPE test. As is evident from plot \ref{fig:ope_vs}, the SiamFC algorithm far outperforms the CMT algorithm; and plot \ref{fig:ope_all} shows that SiamFC outperforms several other well-known feature-based tracking algorithms. However, the SiamFC algorithm ran at an average of 2.21 fps over the OPE test, while the CMT algorithm ran at an average of 10.70 fps. Notably, the SiamFC tracker did not have enough memory to store the entire computational graph in memory, which likely adversely affected its speed.
 
+\newpage
 \section{Conclusion and Future Work}
 
 \subsection{Conclusion}
