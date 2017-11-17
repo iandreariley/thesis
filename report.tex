@@ -71,6 +71,7 @@
 \newpage
 \begin{center}
 \section*{Signature Page}
+\addcontentsline{toc}{section}{\numberline{}Signature Page}%
 \end{center}
 \addtocounter{page}{1}
 {
@@ -106,11 +107,13 @@
 \newpage
 \newgeometry{left=1.5in, right=1in, top=1in, bottom=1in}
 \section*{Acknowledgements}
+\addcontentsline{toc}{section}{\numberline{}Acknowledgements}%
 Completing this thesis would have been impossible were it not for the tremendous good fortune I've had to be surrounded by loving, intelligent, and supportive people. To Mom and Dad, first of all, for supporting your decreasingly youthful son while he played with computers. To Alexandra, for listening to me talk about neural networks with something that passed for interest; you are first and last in my heart. To Devin, for the soundest career advice; wubba-wubba. To my thesis committee:
 Dr. Amar Raheja, for your ongoing academic and professional support, I owe you a debt of gratitude too large to repay here; Dr. Subodh Bhandari, for teaching me to google; Dr. Hao Ji for a most thorough introduction to neural networks. To Arvin, Joshua, Alex, Fernando, Miguel, and Rene; a finer group of aerospace engineers was never assembled. To Luca Bertinetto and Jack Valmadre, for publishing a fantastically elegant tracking algorithm, and then answering my thousand questions about how it works. To Jim at jetsonhacks.com, for rad technical support
 and radder jam sessions. To my friends, for giving me the thumbs up even when they probably shouldn't have.
 \newpage
 \section*{Abstract}
+\addcontentsline{toc}{section}{\numberline{}Abstract}%
 Recent advances in computer vision and general purpose graphic processing units (GPUs) have led to significant advances in computer-vision-based object detection and tracking. Simultaneously, research on low-power computing has yielded battery-powered devices with enough compute power and memory to run resource-hungry algorithms like neural networks. At the same time, small unmanned aerial vehicles are drawing interest for a wide array of applications, like surveillance. Despite this confluence of events, there seems to be a dearth of research for onboard tracking for small UAVs.
 In this research I implement a small onboard tracking module intended for a hexacopter UAV. I implement two computer-vision-based tracking algorithms for the module and compare their performance. One is a so-called "feature-based" tracker, the other uses a convolutional neural network. The results show that the neural-network-based method out-performs the feature-based method, but runs too slowly for a real-time application.
 %Automated target-tracking has long been a problem of interest in the field of computer vision. This is motivated by the fact that visual surveillance is a simple and tedious task. Yet truly robust solutions for visual target tracking have been illusive. The problem at the center of persistent target tracking, is how to make the tracking program robust to changes in the target's appearance. An ideal tracker would be robust to changes in object scale and rotation, changes in lighting,
@@ -208,7 +211,7 @@ One of the benefits of the fully-convolutional architecture of the Siamese netwo
 
 \begin{figure}[h]
 	\includegraphics[width=\linewidth]{img/siamesefc_conv-explicit.jpg}
-	\caption{Siamese network as described in \cite{bertinetto2016fully}. In this case $\varphi$ is the CNN function. The dot product of extracted features of the template and the search image are taken at every location in the search image. The smallest dot 			      product is considered the most likely location of the object.}
+	\caption{Siamese network as described in \cite{bertinetto2016fully}. In this case $\varphi$ is the CNN function. The dot product of extracted features of the template and the search image are taken at every location in the search image. The smallest dot 			      product is considered the most likely location of the object. Figure credit: \cite{bertinetto2016fully}}
 	\label{fig:siamese}
 \end{figure}
 
@@ -225,7 +228,7 @@ classification.
 
 \begin{figure}[h]
 \includegraphics[width=\linewidth]{img/FCNN.png}
-\caption{A fully connected neural network}
+\caption{A fully connected neural network. Figure credit \cite{nndiagram2005burgmer}}
 \label{fig:fcnn}
 \end{figure}
 
@@ -237,7 +240,7 @@ More formally, let $F$ and $I$ be two two-dimensional tensors of dimensions $n\t
 
 \begin{figure}[h]
 \includegraphics[width=\linewidth]{img/CNN.jpeg}
-\caption{A layer of convolutional filters and the resulting convolution volume with an input image}
+\caption{A layer of convolutional filters and the resulting convolution volume with an input image. Figure credit \cite{convnetdiagram2016karpathy}}
 \label{fig:CNN}
 \end{figure}
 
@@ -411,7 +414,7 @@ The velocity vector and the yaw are then passed via MAVLink to the Pixhawk, whic
 \begin{figure}
 	\centering
 	\includegraphics{img/bbox.png}
-	\caption{Example of a bounding box around a target}
+	\caption{Example of a bounding box around a target. Figure Credit \cite{wu2013online}}
 	\label{fig:bbox}
 \end{figure}
 
