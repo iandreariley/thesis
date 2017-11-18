@@ -469,7 +469,7 @@ Speed is reported in frames per second (fps).
 
 All tracking algorithms were run on a Jetson TX1 running Linux for Tegra (L4T) Ubuntu 14.04 (Trusty Taur). All algorithms were implemented in python, and were modified minimally from the original code. Although the TX1 has 3.9 GiB of memory, only around 2.43 GiB memory is available in user space. L4T Ubuntu is a multi-tasking OS, and is not the most efficient environment in which a tracker can run. However, it mimics the real environment in which a tracker would have to run on small drone, since the onboard computer would have to handle several tasks (e.g. communicating with ground control).
 
-\begin{figure}[t]
+\begin{figure}
 \centering
 \begin{subfigure}{.5\textwidth}
   \centering\captionsetup{width=.85\linewidth}%
@@ -487,13 +487,25 @@ All tracking algorithms were run on a Jetson TX1 running Linux for Tegra (L4T) U
   \centering\captionsetup{width=.85\linewidth}%
   \includegraphics[width=\linewidth]{img/sre_vs.png}
   \caption{SRE plot for the CMT and SiamFC trackers on a Jetson TX1}
-  \label{fig:ope_vs}
+  \label{fig:sre_vs}
 \end{subfigure}%
 \begin{subfigure}{.5\textwidth}
   \centering\captionsetup{width=.85\linewidth}
   \includegraphics[width=\linewidth]{img/sre_all.png}
   \caption{SRE plot for several trackers, SiamFC is the best performing.}
-  \label{fig:ope_all}
+  \label{fig:sre_all}
+\end{subfigure}
+\begin{subfigure}{.5\textwidth}
+  \centering\captionsetup{width=.85\linewidth}%
+  \includegraphics[width=\linewidth]{img/tre_vs.png}
+  \caption{TRE plot for the CMT and SiamFC trackers on a Jetson TX1}
+  \label{fig:tre_vs}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering\captionsetup{width=.85\linewidth}
+  \includegraphics[width=\linewidth]{img/tre_all.png}
+  \caption{TRE plot for several trackers, SiamFC is the best performing.}
+  \label{fig:tre_all}
 \end{subfigure}
 \caption{Online Tracking Benchmark results for the CMT and SiamFC trackers}
 \label{fig:ope}
