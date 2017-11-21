@@ -19,7 +19,12 @@
 \usepackage[explicit]{titlesec}
 
 \titleformat{\section}
-  {\normalfont\filcenter\bfseries}{\thesection}{1em}{\MakeUppercase{#1}}
+  {\bfseries\filcenter}{\thesection}{1em}{\MakeUppercase{#1}}
+  
+%% Remove section numbers from sections, subsections and subsubsections.
+\renewcommand{\thesection}{}
+\renewcommand{\thesubsection}{}
+\renewcommand{\thesubsubsection}{}
 
 
 \sectionfont{\fontsize{12}{12}\selectfont}
@@ -28,24 +33,6 @@
 
 \usepackage{fontspec}
 \setmainfont{Times New Roman}
-
-% Load Fonts
-% \setromanfont[
-% BoldFont=timesb.ttf,
-% ItalicFont=timesi.ttf,
-% BoldItalicFont=timesbi.ttf,
-% ]{times.ttf}
-% \setsansfont[
-% BoldFont=arialbd.ttf,
-% ItalicFont=ariali.ttf,
-% BoldItalicFont=arialbi.ttf
-% ]{arial.ttf}
-% \setmonofont[Scale=0.90,
-% BoldFont=courierb.ttf,
-% ItalicFont=courieri.ttf,
-% BoldItalicFont=courierbi.ttf,
-% Color={0019D4}
-% ]{courier.ttf}
 
 \doublespacing
 \newgeometry{left=1.5in, top=2in, right=1in, bottom=1in}
@@ -81,10 +68,8 @@
 \end{titlepage}
 
 \newpage
-\begin{center}
 \section*{Signature Page}%
 \addcontentsline{toc}{section}{\numberline{}Signature Page}%
-\end{center}
 \addtocounter{page}{1}
 {
 	\setstretch{1.0}
