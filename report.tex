@@ -14,6 +14,17 @@
 \usepackage{algpseudocode}
 \usepackage{algorithm}
 \usepackage{algorithmicx}
+\usepackage{titling}
+\usepackage{sectsty}
+\usepackage[explicit]{titlesec}
+
+\titleformat{\section}
+  {\normalfont\filcenter\bfseries}{\thesection}{1em}{\MakeUppercase{#1}}
+
+
+\sectionfont{\fontsize{12}{12}\selectfont}
+\subsectionfont{\fontsize{12}{12}\selectfont}
+\subsubsectionfont{\fontsize{12}{12}\selectfont}
 
 \usepackage{fontspec}
 \setmainfont{Times New Roman}
@@ -38,9 +49,10 @@
 
 \doublespacing
 \newgeometry{left=1.5in, top=2in, right=1in, bottom=1in}
-\title{Target-Tracking Using Neural Networks on Low-Power Devices with Applications to UAVs}
+\title{Visual Target-Tracking on Low-Power Devices with Applications to UAVs}
 \author{Ian Riley}
 \date{December 2016}
+\DeclareMathOperator{\arctantwo}{arctan2}
 
 \begin{document}
 \pagenumbering{roman}
@@ -49,7 +61,7 @@
 
 	\thispagestyle{empty}
 	\begin{center}
-		\textbf{Target-Tracking Using Neural Networks on Low-Power Devices with Applications to UAVs}\\
+		\textbf{\thetitle}\\
 		\vspace{60pt}
 		A Thesis\\
 		Presented to the\\
@@ -70,7 +82,7 @@
 
 \newpage
 \begin{center}
-\section*{Signature Page}
+\section*{Signature Page}%
 \addcontentsline{toc}{section}{\numberline{}Signature Page}%
 \end{center}
 \addtocounter{page}{1}
@@ -79,7 +91,7 @@
 	\begin{tabularx}{\textwidth}{lX}
 		& \\
 		& \\
-		\textbf{\uppercase{Thesis:}} & \uppercase{Target-Tracking Using Neural Networks on Low-Power Devices with Applications to UAVs} \\
+		\textbf{\uppercase{Thesis:}} & \uppercase{Visual Target-Tracking on Low-Power Devices with Applications to UAVs} \\
 		& \\
 		& \\
 		\textbf{\uppercase{Author:}} & Ian Drea Riley \\
@@ -115,13 +127,7 @@ and radder jam sessions. To my friends, for giving me the thumbs up even when th
 \section*{Abstract}
 \addcontentsline{toc}{section}{\numberline{}Abstract}%
 Recent advances in computer vision and general purpose graphic processing units (GPUs) have led to significant advances in computer-vision-based object detection and tracking. Simultaneously, research on low-power computing has yielded battery-powered devices with enough compute power and memory to run resource-hungry algorithms like neural networks. At the same time, small unmanned aerial vehicles are drawing interest for a wide array of applications, like surveillance. Despite this confluence of events, there seems to be a dearth of research for onboard tracking for small UAVs.
-In this research I implement a small onboard tracking module intended for a hexacopter UAV. I implement two computer-vision-based tracking algorithms for the module and compare their performance. One is a so-called "feature-based" tracker, the other uses a convolutional neural network. The results show that the neural-network-based method out-performs the feature-based method, but runs too slowly for a real-time application.
-%Automated target-tracking has long been a problem of interest in the field of computer vision. This is motivated by the fact that visual surveillance is a simple and tedious task. Yet truly robust solutions for visual target tracking have been illusive. The problem at the center of persistent target tracking, is how to make the tracking program robust to changes in the target's appearance. An ideal tracker would be robust to changes in object scale and rotation, changes in lighting,
-%object deformation and full- or partial-occlusion. Recent advances in object classification using convolutional neural networks (CNNs) have made them popular for use in anything computer-vision related. Until recently a lack of sufficient labeled video data limited attempts at using CNNs for target tracking to hacking the features of trained object classifiers for spatial data, operations that are too expensive for the real-time requirements of target trackers. However,
-%\cite{bertinetto2016fully} uses the recently released ImageNet video dataset to train a fully-convolutional network that is capable of tracking with state-of the art accuracy, at more than 10 times the speed of some CNN-based trackers.
-%At the same time, computer hardware has become cheaper, faster, and increasingly focused on parallel processing. Because neural-network architecture is meant to mimic the highly parallel architecture of the brain, they pair naturally with massively parallel computer architectures like those of GPUs, which often have hundreds, if not thousands, of small, low-speed cores. The advance of GPU architecture has made running neural-networks at real-time speeds achievable. More recent
-%GPUs have been designed specifically with low-power devices in mind. While they do not deliver the computational power of larger, high-power GPUs, they make highly-parallel processing available to battery-operated devices.
-%In this research, we attempt to show that a real-time target-tracking software can be run on a small, low-power GPU that could feasibly be installed as a companion computer to a small robot, and give it target-tracking capabilities.
+In this research I implement a small onboard tracking module intended for a hexacopter UAV. I implement two computer-vision-based tracking algorithms for the module and compare their performance. One is a so-called "feature-based" tracker, the other uses a convolutional neural network. The results show that the neural-network-based method out-performs the feature-based method, but runs too slowly for a real-time application. The faster feature-based implementation processes frames at over 10 frames per second, which makes the module a feasible solution for realtime tracking.
 
 \newpage
 \tableofcontents
@@ -145,7 +151,7 @@ Not surprisingly, CNNs have also been employed in the domain of object identific
 
 Given the clear utility of a drone capable of visually tracking a target, little research appears to have been done towards a viable, robust, and onboard solution to the target tracking problem, and what research there is makes no use of deep-learning-based algorithms. Further, several of the algorithms \cite{pestana2014computer, woods2015dynamic} do all computer-vision related tasks on a remote computer (i.e., not onboard) which places a significant constraint on the UAV, since it must always maintain a line of communication with the remote.
 
-In this thesis, I present two implementations of an onboard target-tracking module, one using a feature-based detection algorithm, and another using a CNN-based detection algorithm, and compare their results. I find that while the CNN-based tracker outperforms the feature-based tracker by a wide margin, its frame-rate is too slow to meet real-time requirements.
+In this thesis, I present a feasible method for robust, onboard visual tracking on a small, battery powered UAV. I present two implementations of an onboard target-tracking module, one using a feature-based detection algorithm, and another using a CNN-based detection algorithm, and compare their results. I find that while the CNN-based tracker outperforms the feature-based tracker by a wide margin, its frame-rate is too slow to meet real-time requirements. 
 
 %Target-tracking using CNNs, then, seems like a promising route for developing the tracking capacity necessary for autonomous drone surveillance. However, the high computational cost of CNNs as compared to other tracking methods poses a challenge in the realm of real-time target tracking. General Purpose Graphic Processing Units (GPGPUs) are used to reduce the compute-time required for prediction using CNNs, however only a very few architectures have managed the speed required for real-time tracking.
 
@@ -225,7 +231,7 @@ One of the benefits of the fully-convolutional architecture of the Siamese netwo
 
 \begin{figure}[h]
 	\includegraphics[width=\linewidth]{img/siamesefc_conv-explicit.jpg}
-	\caption{Siamese network as described in \cite{bertinetto2016fully}. In this case $\varphi$ is the CNN function. The dot product of extracted features of the template and the search image are taken at every location in the search image. The smallest dot 			      product is considered the most likely location of the object. Figure credit: \cite{bertinetto2016fully}}
+	\caption[SiamFC Architecture]{Siamese network as described in \cite{bertinetto2016fully}. In this case $\varphi$ is the CNN function. The dot product of extracted features of the template and the search image are taken at every location in the search image. The smallest dot product is considered the most likely location of the object. Figure credit: \cite{bertinetto2016fully}}
 	\label{fig:siamese}
 \end{figure}
 
@@ -242,7 +248,7 @@ classification.
 
 \begin{figure}[h]
 \includegraphics[width=\linewidth]{img/FCNN.png}
-\caption{A fully connected neural network. Figure credit \cite{nndiagram2005burgmer}}
+\caption[Example Fully-Connected Neural Network Architecture]{A fully connected neural network. Figure credit \cite{nndiagram2005burgmer}}
 \label{fig:fcnn}
 \end{figure}
 
@@ -254,7 +260,7 @@ More formally, let $F$ and $I$ be two two-dimensional tensors of dimensions $n\t
 
 \begin{figure}[h]
 \includegraphics[width=\linewidth]{img/CNN.jpeg}
-\caption{A layer of convolutional filters and the resulting convolution volume with an input image. Figure credit \cite{convnetdiagram2016karpathy}}
+\caption[Convolutional Layer Diagram]{A layer of convolutional filters and the resulting convolution volume with an input image. Figure credit \cite{convnetdiagram2016karpathy}}
 \label{fig:CNN}
 \end{figure}
 
@@ -339,7 +345,7 @@ a low-power device that is a feasible companion computer for a battery-powered v
 		\caption{Nvidia TX1 installed on the TX1 development kit carrier board}
 		\label{fig:devkit}
 	\end{subfigure}%
-	\caption{TX1 Development Kit and SoC}
+	\caption[TX1 Development Kit]{TX1 Development Kit and SoC}
 	\label{fig:tx1}
 \end{figure}
 
@@ -370,7 +376,7 @@ a low-power device that is a feasible companion computer for a battery-powered v
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=.6\textwidth]{img/dji.jpg}
-	\caption{DJI S900 hexacopter}
+	\caption[DJI S900 Hexacopter]{DJI S900 hexacopter}
 	\label{fig:drone}
 \end{figure}
 
@@ -394,7 +400,14 @@ a low-power device that is a feasible companion computer for a battery-powered v
 \noindent\textbf{Note:} The Jetson TX1 is not, as yet, well supported in python. Both OpenCV and Tensorflow had to be built from source, and required several patches in order to make them run properly on the TX1. In the case of Tensorflow 0.11, some knowledge of the build tool Bazel is required, as several of the dependency URLs are out of date. The Tensorflow build also requires more physical memory (around 10GB) than is available on the TX1 (8GB). In order to provide the requisite memory, a SATA SSD was installed on the TX1 and a swap file added. The scripts provided by the Jetsonhacks \cite{jetsonhacks2016} repository on Github served as a starting point for the Tensorflow build. It should be noted that the more recent commits update the Tensorflow version to 1.3, which is current as of this writing. The commit referenced in the notes gives the state of the files when they were used for this work (and install Tensorflow 0.11).
 
 \subsection{Implementation}
-\noindent\textbf{Hardware Setup:} The logitech C310 camera is connected to the TX1 via the carrier board's USB port. The Pixhawk is connected to the TX1 via a UART serial connection. The serial wires run from the UART pins on the carrier board's expansion header to the "telemetry-2" port on the Pixhawk. It's important to note that the power serial wire is NOT used, as this can damage to the Pixhawk. Only the ground, transmit, receive, request-to-send, and clear-to-send pins should be connected to the Pixhawk's telemetry-2 port (These correspond to pins 6, 8, 10, 11 and 36 on the carrier board's expansion header, respectively). The power wire should be disconnected (or absent). The Pixhawk is powered externally by the battery.
+\noindent\textbf{Hardware Setup:} The logitech C310 camera is connected to the TX1 via the carrier board's USB port. The Pixhawk is connected to the TX1 via a UART serial connection. The serial wires run from the UART pins on the carrier board's expansion header to the "telemetry-2" port on the Pixhawk. It's important to note that the power serial wire is NOT used, as this can damage to the Pixhawk. Only the ground, transmit, receive, request-to-send, and clear-to-send pins should be connected to the Pixhawk's telemetry-2 port (These correspond to pins 6, 8, 10, 11 and 36 on the carrier board's expansion header, respectively). The power wire should be disconnected (or absent). The Pixhawk is powered externally by the battery. A diagram of the system is given in by the diagram in figure \ref{fig:diagram}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{img/network.png}
+	\caption[System Architecture Diagram]{Diagram of the network and software architecture of the target tracking system}
+	\label{fig:diagram}
+\end{figure}
 
 \noindent\textbf{Software:} The main function of the tracking algorithm implemented for this research can be described by the following algorithm:
 
@@ -422,13 +435,13 @@ The first two lines of the algorithm are fairly trivial. OpenCV provides an API 
 
 \subsubsection{Navigation}\label{navigation}
 For the purposes of this paper, a very simple navigation logic was implemented. The task of the navigation logic is to keep the drone following the target at a constant speed and constant altitude. At each iteration of the while loop in algorithm~\ref{alg:thealg}, the tracker returns a new position for the target. This position is in the form of a "bounding box" around the target. A bounding box, as I use the term in this thesis, is a rectangle that is normal to the image axes. An example bounding box is shown in figure~\ref{fig:bbox}. Since it is presumed that the tracker has fit the bounding box tightly to the target, the algorithm presumes that the target is more or less at the center of the bounding box. To keep the drone tracking the target, the navigation logic finds the centroid of the bounding box in image coordinates, and then converts that position into a vector extending from the front of the drone towards the target. A monocular vision system cannot directly calculate the distance to a target in general. However, for the purposes of this research we presume the target is ground-based. Using this information, and assuming that the ground is approximately planar, the navigation logic computes the point of intersection between the ray extending from the camera towards the target with the plane of the ground, and assumes that to be the target position in relative coordinates. Then, using the method described in \cite{cai2011coordinate}, the relative coordinates are converted to north-east-down (NED) coordinates. The down coordinate is removed and the remaining north-east vector is scaled to have a magnitude of 5 m/s. Similarly, we calculate the new heading of the drone as:
-\[ yaw = \arctan \Big( \frac{east}{north} \Big) \times \frac{180}{\pi} \]
+\[ yaw = \arctantwo \Big( \frac{east}{north} \Big) \times \frac{180}{\pi} \]
 The velocity vector and the yaw are then passed via MAVLink to the Pixhawk, which implements the control logic to change the drone's velocity and heading.
 
 \begin{figure}
 	\centering
 	\includegraphics{img/bbox.png}
-	\caption{Example of a bounding box around a target. Figure Credit \cite{wu2013online}}
+	\caption[Example Bounding Box]{Example of a bounding box around a target. Figure Credit \cite{wu2013online}}
 	\label{fig:bbox}
 \end{figure}
 
@@ -521,7 +534,7 @@ All tracking algorithms were run on a Jetson TX1 running Linux for Tegra (L4T) U
   \caption{TRE plot for several trackers, SiamFC is the best performing.}
   \label{fig:tre_all}
 \end{subfigure}
-\caption{Online Tracking Benchmark results for the CMT and SiamFC trackers. Note: There are trackers that outperform the SiamFC algorithm in these tests, however, they were not available in the benchmark implementation at the time of this writing.}
+\caption[OTB Success Plots for SiamFC and CMT]{Online Tracking Benchmark results for the CMT and SiamFC trackers. Note: There are trackers that outperform the SiamFC algorithm in these tests, however, they were not available in the benchmark implementation at the time of this writing.}
 \label{fig:ope}
 \end{figure}
 
